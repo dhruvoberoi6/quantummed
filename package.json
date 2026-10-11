@@ -1,0 +1,13 @@
+{
+  "name": "quantummed",
+  "version": "1.0.0",
+  "description": "⚛ Quantum-assisted disease risk prediction & AI health assistant (UN SDG 3)",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "netlify dev",
+    "start": "python3 -m http.server 8000"
+  },
+  "engines": { "node": ">=18" },
+  "license": "MIT"
+}

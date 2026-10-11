@@ -1,0 +1,12 @@
+[
+  { "Time": "2025-01-01 08:00:00", "Temperature": 98.2, "BPM": 68, "SpO2": 98, "Risk": "NORMAL" },
+  { "Time": "2025-01-01 08:10:00", "Temperature": 98.4, "BPM": 72, "SpO2": 97, "Risk": "NORMAL" },
+  { "Time": "2025-01-01 08:20:00", "Temperature": 98.6, "BPM": 75, "SpO2": 98, "Risk": "NORMAL" },
+  { "Time": "2025-01-01 08:30:00", "Temperature": 99.1, "BPM": 88, "SpO2": 96, "Risk": "WARNING" },
+  { "Time": "2025-01-01 08:40:00", "Temperature": 100.8, "BPM": 104, "SpO2": 94, "Risk": "WARNING" },
+  { "Time": "2025-01-01 08:50:00", "Temperature": 101.6, "BPM": 126, "SpO2": 91, "Risk": "CRITICAL" },
+  { "Time": "2025-01-01 09:00:00", "Temperature": 99.4, "BPM": 96, "SpO2": 95, "Risk": "WARNING" },
+  { "Time": "2025-01-01 09:10:00", "Temperature": 98.5, "BPM": 78, "SpO2": 98, "Risk": "NORMAL" },
+  { "Time": "2025-01-01 09:20:00", "Temperature": 98.3, "BPM": 74, "SpO2": 98, "Risk": "NORMAL" },
+  { "Time": "2025-01-01 09:30:00", "Temperature": 98.1, "BPM": 70, "SpO2": 99, "Risk": "NORMAL" }
+]

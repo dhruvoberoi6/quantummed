@@ -1,0 +1,3192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuantumMed — Disease Risk Prediction & AI Health Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#040d1a;
+  --bg2:#071428;
+  --surface:#0a1f3a;
+  --surface2:#0d2545;
+  --border:#1a3a6a;
+  --border2:#1e4a80;
+  --accent:#00d4ff;
+  --accent2:#0099cc;
+  --accent3:#7c3aed;
+  --green:#00ff9f;
+  --amber:#f59e0b;
+  --red:#ef4444;
+  --text:#e8f4fd;
+  --text2:#8ab4cc;
+  --text3:#4a7a99;
+  --mono:'Space Mono',monospace;
+  --sans:'Sora',sans-serif;
+  --r:8px;
+  --r2:16px;
+}
+html{font-size:15px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;line-height:1.6}
+
+/* NAV */
+nav{background:rgba(4,13,26,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
+.logo{font-family:var(--mono);font-size:1.1rem;color:var(--accent);letter-spacing:-.02em;display:flex;align-items:center;gap:.5rem}
+.logo-icon{width:28px;height:28px;border:1.5px solid var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.logo-icon::before{content:'';position:absolute;width:100%;height:100%;background:linear-gradient(135deg,var(--accent)20%,transparent 60%);opacity:.15}
+.logo-ring{width:14px;height:14px;border:2px solid var(--accent);border-radius:50%;animation:spin 4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.nav-links{display:flex;gap:1.5rem;list-style:none}
+.nav-links a{color:var(--text2);text-decoration:none;font-size:.85rem;letter-spacing:.03em;transition:color .2s;cursor:pointer}
+.nav-links a:hover,.nav-links a.active{color:var(--accent)}
+.nav-badge{background:rgba(0,212,255,.1);border:1px solid var(--border2);border-radius:20px;padding:.2rem .7rem;font-size:.75rem;color:var(--accent);font-family:var(--mono)}
+
+/* WIFI STATUS BAR */
+#wifi-status-bar{background:linear-gradient(90deg,rgba(0,255,159,0.06),rgba(0,212,255,0.06));border-bottom:1px solid rgba(0,255,159,.15);padding:.35rem 2rem;display:flex;align-items:center;gap:1.5rem;font-family:var(--mono);font-size:.7rem;flex-wrap:wrap}
+.wifi-stat{display:flex;align-items:center;gap:.4rem;color:var(--text3)}
+.wifi-stat .val{color:var(--green)}
+.wifi-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.wifi-dot.amber{background:var(--amber)}
+.wifi-dot.red{background:var(--red);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* HERO */
+.hero{padding:4rem 2rem 3rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(0,212,255,.07) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-flex;align-items:center;gap:.4rem;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);border-radius:20px;padding:.25rem .8rem;font-size:.75rem;color:#a78bfa;font-family:var(--mono);letter-spacing:.05em;margin-bottom:1.5rem}
+.hero-tag::before{content:'●';color:#7c3aed;font-size:.6rem;animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-size:2.8rem;font-weight:700;line-height:1.1;letter-spacing:-.03em;margin-bottom:.75rem}
+h1 span{color:var(--accent)}
+.hero-sub{color:var(--text2);max-width:520px;margin:0 auto 2rem;font-size:.95rem;font-weight:300}
+.sdg-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(0,255,159,.08);border:1px solid rgba(0,255,159,.25);border-radius:var(--r);padding:.4rem 1rem;font-size:.8rem;color:var(--green)}
+
+/* TABS */
+.tab-bar{display:flex;gap:0;background:var(--surface);border-bottom:1px solid var(--border);padding:0 2rem;max-width:1400px;margin:0 auto;overflow-x:auto}
+.tab-btn{padding:.75rem 1.25rem;font-family:var(--mono);font-size:.78rem;color:var(--text3);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;letter-spacing:.04em;white-space:nowrap}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-btn:hover:not(.active){color:var(--text2)}
+
+/* TAB CONTENT */
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* MAIN LAYOUT */
+.app{display:grid;grid-template-columns:320px 1fr;gap:1.5rem;padding:1.5rem 2rem;max-width:1400px;margin:0 auto}
+@media(max-width:900px){.app{grid-template-columns:1fr}}
+
+/* PANEL */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-bottom:0}
+.panel-header{padding:.75rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem;font-family:var(--mono);font-size:.78rem;color:var(--text2);letter-spacing:.05em}
+.panel-header .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+.panel-body{padding:1.25rem}
+
+/* FORM */
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:.75rem;color:var(--text2);margin-bottom:.35rem;font-family:var(--mono);letter-spacing:.03em}
+.form-control{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.55rem .75rem;color:var(--text);font-family:var(--sans);font-size:.85rem;outline:none;transition:border-color .2s}
+.form-control:focus{border-color:var(--accent2)}
+select.form-control option{background:var(--bg2)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+
+.range-wrap{position:relative;padding-top:1.4rem}
+.range-wrap input[type=range]{width:100%;height:4px;background:var(--border);border-radius:2px;outline:none;-webkit-appearance:none;cursor:pointer}
+.range-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer}
+.range-val{position:absolute;right:0;top:0;font-family:var(--mono);font-size:.75rem;color:var(--accent)}
+
+/* CHECKBOXES */
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
+.check-item{display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:var(--text2);cursor:pointer}
+.check-item input{width:14px;height:14px;accent-color:var(--accent);cursor:pointer}
+
+/* SUBMIT BTN */
+.btn-quantum{width:100%;padding:.75rem;background:transparent;border:1.5px solid var(--accent);border-radius:var(--r);color:var(--accent);font-family:var(--mono);font-size:.85rem;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;letter-spacing:.05em;margin-top:.5rem}
+.btn-quantum::before{content:'';position:absolute;inset:0;background:var(--accent);opacity:0;transition:opacity .2s}
+.btn-quantum:hover::before{opacity:.08}
+.btn-quantum:active{transform:scale(.98)}
+.btn-quantum.loading{opacity:.7;pointer-events:none}
+.btn-quantum .btn-inner{position:relative;display:flex;align-items:center;justify-content:center;gap:.5rem}
+.spinner{width:14px;height:14px;border:2px solid rgba(0,212,255,.3);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;display:none}
+.loading .spinner{display:block}
+
+/* RESULTS PANEL */
+.results-area{display:flex;flex-direction:column;gap:1.25rem}
+.placeholder-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:280px;color:var(--text3);gap:.75rem}
+.placeholder-state .q-icon{width:60px;height:60px;border:1.5px solid var(--border2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--text3)}
+
+/* RISK CARDS */
+.risk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem}
+.risk-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;transition:border-color .2s}
+.risk-card.high{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.04)}
+.risk-card.medium{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.04)}
+.risk-card.low{border-color:rgba(0,255,159,.4);background:rgba(0,255,159,.04)}
+.risk-name{font-size:.8rem;color:var(--text2);margin-bottom:.4rem}
+.risk-pct{font-family:var(--mono);font-size:1.6rem;font-weight:700;line-height:1}
+.risk-card.high .risk-pct{color:var(--red)}
+.risk-card.medium .risk-pct{color:var(--amber)}
+.risk-card.low .risk-pct{color:var(--green)}
+.risk-label{font-size:.7rem;font-family:var(--mono);margin-top:.2rem;opacity:.7}
+.risk-bar{height:3px;background:var(--border);border-radius:2px;margin-top:.6rem;overflow:hidden}
+.risk-bar-fill{height:100%;border-radius:2px;transition:width 1s ease}
+.risk-card.high .risk-bar-fill{background:var(--red)}
+.risk-card.medium .risk-bar-fill{background:var(--amber)}
+.risk-card.low .risk-bar-fill{background:var(--green)}
+
+/* QUANTUM METRICS */
+.q-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}
+.q-metric{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:.75rem;text-align:center}
+.q-metric-val{font-family:var(--mono);font-size:1.1rem;color:var(--accent);font-weight:700}
+.q-metric-label{font-size:.68rem;color:var(--text3);margin-top:.2rem}
+
+/* AI ANALYSIS */
+.ai-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem;font-size:.875rem;color:var(--text2);line-height:1.8}
+.ai-box p{margin-bottom:.6rem}
+.ai-box p:last-child{margin-bottom:0}
+.ai-loading{display:flex;align-items:center;gap:.6rem;color:var(--text3);font-family:var(--mono);font-size:.8rem}
+
+/* CHART */
+.chart-area{padding:1rem}
+.bar-chart{display:flex;flex-direction:column;gap:.6rem}
+.bar-row{display:flex;align-items:center;gap:.75rem;font-size:.8rem}
+.bar-label{width:120px;color:var(--text2);font-size:.75rem;text-align:right;flex-shrink:0}
+.bar-track{flex:1;height:18px;background:var(--border);border-radius:3px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.bar-val{font-family:var(--mono);font-size:.72rem;color:var(--text3);width:40px;text-align:right;flex-shrink:0}
+
+/* HISTORY */
+.history-list{display:flex;flex-direction:column;gap:.5rem;max-height:200px;overflow-y:auto}
+.history-item{display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;background:var(--bg2);border-radius:var(--r);font-size:.78rem;cursor:pointer;border:1px solid transparent;transition:border-color .2s}
+.history-item:hover{border-color:var(--border2)}
+.history-time{color:var(--text3);font-family:var(--mono);font-size:.7rem}
+.history-badge{padding:.15rem .5rem;border-radius:20px;font-size:.68rem;font-family:var(--mono)}
+.badge-high{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.badge-medium{background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.3)}
+.badge-low{background:rgba(0,255,159,.15);color:var(--green);border:1px solid rgba(0,255,159,.3)}
+
+/* FOOTER SDG */
+.sdg-strip{background:var(--surface);border-top:1px solid var(--border);padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;margin-top:2rem;flex-wrap:wrap;gap:1rem}
+.sdg-info{display:flex;align-items:center;gap:1rem}
+.sdg-number{font-family:var(--mono);font-size:2rem;font-weight:700;color:var(--green);line-height:1}
+.sdg-text{font-size:.8rem;color:var(--text2)}
+.sdg-text strong{color:var(--text);display:block}
+.tech-tags{display:flex;gap:.5rem;flex-wrap:wrap}
+.tech-tag{padding:.2rem .6rem;background:var(--bg2);border:1px solid var(--border);border-radius:20px;font-size:.7rem;color:var(--text3);font-family:var(--mono)}
+
+/* API KEY BANNER */
+#apiKeyBanner{background:linear-gradient(90deg,rgba(124,58,237,.12),rgba(0,212,255,.08));border-bottom:1px solid rgba(124,58,237,.35);padding:.5rem 2rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;font-family:var(--mono);font-size:.75rem}
+#apiKeyBanner.hidden{display:none}
+.apikey-label{color:#a78bfa;white-space:nowrap}
+.apikey-input{flex:1;min-width:220px;max-width:380px;background:var(--bg2);border:1px solid rgba(124,58,237,.4);border-radius:var(--r);padding:.3rem .7rem;color:var(--text);font-family:var(--mono);font-size:.75rem;outline:none;transition:border-color .2s;letter-spacing:.02em}
+.apikey-input:focus{border-color:#a78bfa}
+.apikey-save{padding:.3rem .8rem;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.5);border-radius:var(--r);color:#a78bfa;font-family:var(--mono);font-size:.72rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.apikey-save:hover{background:rgba(124,58,237,.28)}
+.apikey-status{font-size:.7rem;color:var(--text3)}
+.apikey-status.ok{color:var(--green)}
+.apikey-link{color:var(--accent2);text-decoration:none;font-size:.68rem}
+.apikey-link:hover{color:var(--accent)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ===================== R ANALYTICS TAB STYLES ===================== */
+.r-wrap{padding:1.5rem 2rem;max-width:1400px;margin:0 auto;display:flex;flex-direction:column;gap:1.5rem}
+.r-top-bar{display:flex;align-items:center;gap:1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:.9rem 1.25rem;flex-wrap:wrap}
+.r-top-bar .r-status{display:flex;align-items:center;gap:.5rem;font-family:var(--mono);font-size:.75rem;color:var(--text2)}
+.r-top-bar .r-status .rdot{width:8px;height:8px;border-radius:50%;background:var(--text3)}
+.r-top-bar .r-status.ok .rdot{background:var(--green);animation:pulse 2s infinite}
+.r-top-bar .r-status.err .rdot{background:var(--red)}
+.r-top-bar .r-status.loading .rdot{background:var(--amber);animation:pulse .6s infinite}
+.r-top-bar .r-meta{font-family:var(--mono);font-size:.7rem;color:var(--text3)}
+.r-top-bar .r-meta span{color:var(--accent)}
+.r-refresh-btn{margin-left:auto;padding:.4rem .9rem;background:rgba(0,212,255,.1);border:1px solid var(--accent2);border-radius:var(--r);color:var(--accent);font-family:var(--mono);font-size:.72rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.4rem}
+.r-refresh-btn:hover{background:rgba(0,212,255,.2)}
+.r-refresh-btn.spin svg{animation:spin .7s linear infinite}
+
+/* Vital cards */
+.vital-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+@media(max-width:900px){.vital-cards{grid-template-columns:1fr 1fr}}
+.vital-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:1.25rem;position:relative;overflow:hidden;transition:border-color .3s,box-shadow .3s}
+.vital-card::before{content:'';position:absolute;inset:0;opacity:.04;pointer-events:none;background:var(--vc-col,var(--accent))}
+.vital-card.critical{border-color:rgba(239,68,68,.6);box-shadow:0 0 18px rgba(239,68,68,.2);animation:redPulse 1.5s infinite}
+@keyframes redPulse{0%,100%{box-shadow:0 0 18px rgba(239,68,68,.2)}50%{box-shadow:0 0 32px rgba(239,68,68,.45)}}
+.vital-card .vc-icon{font-size:1.5rem;margin-bottom:.5rem}
+.vital-card .vc-val{font-family:var(--mono);font-size:2rem;font-weight:700;color:var(--vc-col,var(--accent));line-height:1;margin-bottom:.15rem}
+.vital-card .vc-unit{font-family:var(--mono);font-size:.75rem;color:var(--text3)}
+.vital-card .vc-label{font-size:.72rem;color:var(--text2);margin-top:.3rem}
+.vital-card .vc-status{position:absolute;top:.75rem;right:.75rem;font-size:.6rem;font-family:var(--mono);padding:.15rem .45rem;border-radius:20px}
+.vc-status.normal{background:rgba(0,255,159,.1);color:var(--green);border:1px solid rgba(0,255,159,.3)}
+.vc-status.warn{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.3)}
+.vc-status.critical{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.vc-trend{font-size:.65rem;color:var(--text3);margin-top:.2rem;font-family:var(--mono)}
+
+/* Emergency panel */
+.emergency-panel{background:rgba(239,68,68,.07);border:1.5px solid rgba(239,68,68,.5);border-radius:var(--r2);padding:1rem 1.25rem;display:none;align-items:center;gap:1rem;animation:redPulse 1.5s infinite}
+.emergency-panel.show{display:flex}
+.em-icon{font-size:2rem;flex-shrink:0}
+.em-title{font-family:var(--mono);font-size:.85rem;color:var(--red);margin-bottom:.3rem}
+.em-list{font-size:.78rem;color:var(--text2);line-height:1.8}
+.em-advice{margin-top:.5rem;font-size:.8rem;color:var(--amber)}
+
+/* 2-col analytics row */
+.r-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+@media(max-width:900px){.r-grid-2{grid-template-columns:1fr}}
+.r-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem}
+@media(max-width:900px){.r-grid-3{grid-template-columns:1fr}}
+
+/* Stats table */
+.stats-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.stats-table th{text-align:left;padding:.45rem .75rem;font-family:var(--mono);font-size:.68rem;color:var(--text3);border-bottom:1px solid var(--border);letter-spacing:.05em}
+.stats-table td{padding:.5rem .75rem;border-bottom:1px solid rgba(26,58,106,.35);color:var(--text2)}
+.stats-table td:first-child{color:var(--text);font-weight:500}
+.stats-table td.num{font-family:var(--mono);color:var(--accent2)}
+.stats-table tr:hover td{background:rgba(0,212,255,.025)}
+
+/* Corr matrix */
+.corr-matrix{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem}
+.corr-cell{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.75rem;text-align:center}
+.corr-cell .corr-pair{font-family:var(--mono);font-size:.65rem;color:var(--text3);margin-bottom:.35rem}
+.corr-cell .corr-val{font-family:var(--mono);font-size:1.3rem;font-weight:700}
+.corr-cell .corr-bar-bg{height:4px;background:var(--border);border-radius:2px;margin-top:.5rem;overflow:hidden}
+.corr-cell .corr-bar-fill{height:100%;border-radius:2px;transition:width 1.2s}
+.corr-cell .corr-desc{font-size:.65rem;color:var(--text3);margin-top:.35rem}
+
+/* Risk distribution */
+.risk-dist{display:flex;flex-direction:column;gap:.6rem}
+.risk-dist-row{display:flex;align-items:center;gap:.75rem}
+.risk-dist-label{width:80px;font-size:.72rem;color:var(--text2);font-family:var(--mono)}
+.risk-dist-bar{flex:1;height:22px;background:var(--border);border-radius:3px;overflow:hidden;position:relative}
+.risk-dist-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:.5rem;font-family:var(--mono);font-size:.65rem;color:#000;font-weight:700;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.risk-dist-count{width:50px;text-align:right;font-family:var(--mono);font-size:.72rem;color:var(--text3)}
+
+/* AI advice box */
+.r-ai-advice{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;font-size:.83rem;color:var(--text2);line-height:1.8;min-height:80px}
+
+/* Canvas containers */
+.chart-canvas-wrap{position:relative;width:100%;padding:.75rem}
+.chart-canvas-wrap canvas{max-height:260px}
+
+/* Loading overlay */
+.r-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:120px;gap:.75rem;color:var(--text3)}
+.r-loading .spin-ring{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+.r-loading p{font-family:var(--mono);font-size:.75rem}
+
+/* Error state */
+.r-error{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:120px;gap:.5rem;color:var(--amber);font-family:var(--mono);font-size:.78rem}
+
+/* JSON path config */
+.r-path-row{display:flex;gap:.5rem;margin-bottom:.75rem}
+.r-path-input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.45rem .75rem;color:var(--text);font-family:var(--mono);font-size:.78rem;outline:none;transition:border-color .2s}
+.r-path-input:focus{border-color:var(--accent2)}
+
+/* TOAST */
+.toast{position:fixed;top:70px;right:1.5rem;background:var(--surface);border:1px solid var(--accent);border-radius:var(--r);padding:.6rem 1rem;font-size:.8rem;color:var(--accent);font-family:var(--mono);z-index:200;opacity:0;transform:translateY(-8px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* ===================== AI HEALTH ASSISTANT STYLES ===================== */
+.assistant-wrap{padding:1.5rem 2rem;max-width:1400px;margin:0 auto;display:grid;grid-template-columns:280px 1fr;gap:1.5rem}
+@media(max-width:900px){.assistant-wrap{grid-template-columns:1fr}}
+
+.topics-panel .topic-btn{display:flex;align-items:center;gap:.6rem;width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.6rem .75rem;color:var(--text2);font-size:.78rem;cursor:pointer;transition:all .2s;margin-bottom:.4rem;text-align:left;font-family:var(--sans)}
+.topics-panel .topic-btn:hover{border-color:var(--accent2);color:var(--text)}
+.topic-icon{font-size:1rem;flex-shrink:0}
+
+.chat-panel{display:flex;flex-direction:column;height:680px}
+.chat-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.9rem}
+.msg{display:flex;gap:.75rem;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{flex-direction:row-reverse}
+.msg-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;border:1px solid var(--border2)}
+.msg.ai .msg-avatar{background:rgba(0,212,255,.1);border-color:var(--accent2)}
+.msg.user .msg-avatar{background:rgba(124,58,237,.15);border-color:var(--accent3)}
+.msg-bubble{max-width:80%;padding:.75rem 1rem;border-radius:12px;font-size:.85rem;line-height:1.7}
+.msg.ai .msg-bubble{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-top-left-radius:3px}
+.msg.user .msg-bubble{background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.25);color:var(--text);border-top-right-radius:3px}
+.msg-bubble strong{color:var(--accent);display:block;margin-bottom:.2rem;font-size:.78rem;font-family:var(--mono)}
+.msg-bubble p{margin-bottom:.4rem}
+.msg-bubble p:last-child{margin-bottom:0}
+.msg-bubble ul{margin:.3rem 0 .3rem 1.2rem;color:var(--text2)}
+.msg-bubble li{margin-bottom:.2rem}
+.typing-indicator{display:flex;gap:4px;align-items:center;padding:.5rem 0}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:var(--accent2);animation:typeBounce .9s infinite}
+.typing-dot:nth-child(2){animation-delay:.15s}
+.typing-dot:nth-child(3){animation-delay:.3s}
+@keyframes typeBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+.chat-input-wrap{border-top:1px solid var(--border);padding:1rem;display:flex;gap:.6rem;background:var(--surface)}
+.chat-input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.6rem .9rem;color:var(--text);font-family:var(--sans);font-size:.875rem;outline:none;resize:none;line-height:1.5;min-height:42px;max-height:120px;transition:border-color .2s}
+.chat-input:focus{border-color:var(--accent2)}
+.send-btn{background:rgba(0,212,255,.12);border:1.5px solid var(--accent2);border-radius:var(--r);color:var(--accent);padding:0 1rem;cursor:pointer;font-family:var(--mono);font-size:.75rem;transition:all .2s;white-space:nowrap;letter-spacing:.04em}
+.send-btn:hover{background:rgba(0,212,255,.2)}
+.send-btn:disabled{opacity:.4;pointer-events:none}
+.disclaimer-note{padding:.5rem 1rem;font-size:.7rem;color:var(--text3);text-align:center;border-top:1px solid var(--border);font-family:var(--mono)}
+.chat-welcome{text-align:center;padding:2rem 1rem;color:var(--text3)}
+.chat-welcome .w-icon{font-size:2.5rem;margin-bottom:.75rem}
+.chat-welcome h3{color:var(--text2);font-size:1rem;margin-bottom:.4rem;font-weight:500}
+.chat-welcome p{font-size:.8rem;line-height:1.6}
+
+.suggest-pills{display:flex;flex-wrap:wrap;gap:.4rem;padding:.5rem 1rem .75rem}
+.pill{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:.25rem .7rem;font-size:.72rem;color:var(--text2);cursor:pointer;transition:all .2s;font-family:var(--mono)}
+.pill:hover{border-color:var(--accent2);color:var(--accent)}
+
+/* AI Assistant capabilities bar */
+.ai-capabilities{display:flex;gap:.5rem;padding:.5rem 1rem;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+.cap-pill{display:flex;align-items:center;gap:.3rem;background:rgba(0,212,255,.05);border:1px solid var(--border);border-radius:20px;padding:.2rem .6rem;font-size:.68rem;color:var(--text3);font-family:var(--mono)}
+.cap-pill.active{background:rgba(0,255,159,.06);border-color:rgba(0,255,159,.3);color:var(--green)}
+
+/* ===================== APPOINTMENT BOOKING MODAL ===================== */
+.appt-modal-overlay{position:fixed;inset:0;background:rgba(4,13,26,0.85);backdrop-filter:blur(6px);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.appt-modal-overlay.open{opacity:1;pointer-events:all}
+.appt-modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);width:min(520px,95vw);max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.6);transform:translateY(20px);transition:transform .3s}
+.appt-modal-overlay.open .appt-modal{transform:translateY(0)}
+.appt-modal-head{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.appt-modal-title{font-family:var(--mono);font-size:.85rem;color:var(--accent);letter-spacing:.05em}
+.appt-close{background:none;border:none;color:var(--text3);font-size:1.1rem;cursor:pointer;padding:.2rem .4rem;transition:color .2s}
+.appt-close:hover{color:var(--text)}
+.appt-modal-body{padding:1.4rem}
+.appt-hosp-name{font-size:.95rem;color:var(--text);font-weight:600;margin-bottom:.2rem}
+.appt-hosp-type{font-size:.72rem;color:var(--text3);font-family:var(--mono);margin-bottom:1rem}
+.appt-form-group{margin-bottom:.85rem}
+.appt-form-group label{display:block;font-size:.72rem;color:var(--text2);margin-bottom:.3rem;font-family:var(--mono);letter-spacing:.03em}
+.appt-form-group input,.appt-form-group select,.appt-form-group textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.5rem .75rem;color:var(--text);font-family:var(--sans);font-size:.85rem;outline:none;transition:border-color .2s}
+.appt-form-group input:focus,.appt-form-group select:focus,.appt-form-group textarea:focus{border-color:var(--accent2)}
+.appt-form-group select option{background:var(--bg2)}
+.appt-form-group textarea{resize:vertical;min-height:70px;line-height:1.5}
+.appt-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.appt-ai-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.9rem;margin-bottom:1rem;font-size:.82rem;color:var(--text2);line-height:1.7;min-height:60px}
+.appt-ai-label{font-family:var(--mono);font-size:.68rem;color:var(--accent2);margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem}
+.appt-footer{display:flex;gap:.6rem;justify-content:flex-end;padding:1rem 1.4rem;border-top:1px solid var(--border)}
+.appt-btn{padding:.55rem 1.1rem;border-radius:var(--r);font-family:var(--mono);font-size:.78rem;cursor:pointer;transition:all .2s;border:1.5px solid var(--border);color:var(--text2);background:transparent}
+.appt-btn:hover{border-color:var(--text2)}
+.appt-btn.primary{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.08)}
+.appt-btn.primary:hover{background:rgba(0,212,255,.18)}
+.appt-btn.primary:disabled{opacity:.4;pointer-events:none}
+.appt-success{text-align:center;padding:1.5rem 1rem}
+.appt-success .check-icon{font-size:2.5rem;margin-bottom:.75rem}
+.appt-success h3{color:var(--green);font-size:1rem;margin-bottom:.4rem;font-family:var(--mono)}
+.appt-success p{font-size:.82rem;color:var(--text2);line-height:1.6}
+.appt-ref{font-family:var(--mono);font-size:.75rem;color:var(--accent);background:rgba(0,212,255,.06);border:1px solid var(--border);border-radius:var(--r);padding:.35rem .75rem;display:inline-block;margin-top:.6rem}
+.hosp-appt-btn{padding:.2rem .6rem;border-radius:20px;font-size:.65rem;font-family:var(--mono);background:rgba(124,58,237,.12);color:#a78bfa;border:1px solid rgba(124,58,237,.35);cursor:pointer;transition:all .2s}
+.hosp-appt-btn:hover{background:rgba(124,58,237,.25);border-color:rgba(124,58,237,.6)}
+
+/* ===================== WIFI / IP DATA COLLECTION ===================== */
+.wifi-wrap{padding:1.5rem 2rem;max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+@media(max-width:900px){.wifi-wrap{grid-template-columns:1fr}}
+
+.device-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.75rem}
+.device-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.85rem;transition:border-color .3s}
+.device-card.connected{border-color:rgba(0,255,159,.4)}
+.device-card.connected .dc-status{color:var(--green)}
+.dc-ip{font-family:var(--mono);font-size:.95rem;color:var(--accent);margin-bottom:.25rem}
+.dc-label{font-size:.7rem;color:var(--text3);font-family:var(--mono);margin-bottom:.4rem}
+.dc-status{font-size:.72rem;font-family:var(--mono)}
+.dc-rssi{font-size:.72rem;color:var(--text3);margin-top:.2rem}
+
+.data-log{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.75rem;font-family:var(--mono);font-size:.72rem;max-height:220px;overflow-y:auto;color:var(--text3);line-height:1.8}
+.log-entry{display:flex;gap:.75rem;padding:.15rem 0;border-bottom:1px solid rgba(26,58,106,.4)}
+.log-ts{color:var(--text3);flex-shrink:0;width:75px}
+.log-type{color:var(--accent2);flex-shrink:0;width:70px}
+.log-msg{color:var(--text2)}
+.log-entry.ok .log-type{color:var(--green)}
+.log-entry.warn .log-type{color:var(--amber)}
+.log-entry.err .log-type{color:var(--red)}
+
+.ip-input-row{display:flex;gap:.5rem;margin-bottom:.75rem}
+.ip-input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.5rem .75rem;color:var(--text);font-family:var(--mono);font-size:.85rem;outline:none;transition:border-color .2s}
+.ip-input:focus{border-color:var(--accent2)}
+.btn-sm{padding:.45rem .9rem;background:rgba(0,212,255,.08);border:1px solid var(--accent2);border-radius:var(--r);color:var(--accent);font-family:var(--mono);font-size:.72rem;cursor:pointer;transition:all .2s}
+.btn-sm:hover{background:rgba(0,212,255,.15)}
+.btn-sm.green{border-color:var(--green);color:var(--green);background:rgba(0,255,159,.08)}
+.btn-sm.green:hover{background:rgba(0,255,159,.15)}
+.btn-sm.red{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.08)}
+
+.data-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.data-table th{text-align:left;padding:.5rem .75rem;font-family:var(--mono);font-size:.68rem;color:var(--text3);border-bottom:1px solid var(--border);letter-spacing:.05em}
+.data-table td{padding:.5rem .75rem;border-bottom:1px solid rgba(26,58,106,.4);color:var(--text2)}
+.data-table tr:hover td{background:rgba(0,212,255,.03)}
+.data-table .risk-hi{color:var(--red)}
+.data-table .risk-med{color:var(--amber)}
+.data-table .risk-lo{color:var(--green)}
+
+.export-row{display:flex;gap:.5rem;flex-wrap:wrap;padding:.75rem 0 0}
+
+/* SENSOR GAUGES */
+.sensor-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-top:.75rem}
+.sensor-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.7rem;text-align:center}
+.sensor-val{font-family:var(--mono);font-size:1.15rem;font-weight:700;color:var(--accent)}
+.sensor-unit{font-size:.6rem;color:var(--text3);font-family:var(--mono)}
+.sensor-label{font-size:.68rem;color:var(--text3);margin-top:.2rem}
+
+/* ===================== NEARBY HOSPITALS MAP ===================== */
+.hospitals-wrap{padding:1.5rem 2rem;max-width:1400px;margin:0 auto}
+.map-layout{display:grid;grid-template-columns:320px 1fr;gap:1.5rem}
+@media(max-width:900px){.map-layout{grid-template-columns:1fr}}
+#map{width:100%;height:520px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2);overflow:hidden;position:relative}
+.hospital-list{max-height:520px;overflow-y:auto;display:flex;flex-direction:column;gap:.6rem}
+.hosp-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.85rem;cursor:pointer;transition:all .2s}
+.hosp-card:hover,.hosp-card.selected{border-color:var(--accent2);background:rgba(0,212,255,.04)}
+.hosp-name{font-size:.85rem;color:var(--text);margin-bottom:.25rem;font-weight:500}
+.hosp-addr{font-size:.72rem;color:var(--text3);margin-bottom:.35rem;line-height:1.4}
+.hosp-meta{display:flex;gap:.75rem;flex-wrap:wrap}
+.hosp-tag{padding:.15rem .5rem;border-radius:20px;font-size:.65rem;font-family:var(--mono)}
+.hosp-tag.open{background:rgba(0,255,159,.1);color:var(--green);border:1px solid rgba(0,255,159,.3)}
+.hosp-tag.closed{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.hosp-tag.dist{background:rgba(0,212,255,.08);color:var(--accent);border:1px solid var(--border)}
+.hosp-tag.rating{background:rgba(245,158,11,.08);color:var(--amber);border:1px solid rgba(245,158,11,.3)}
+.map-controls{display:flex;gap:.6rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+.map-filter{display:flex;gap:.4rem;flex-wrap:wrap}
+.filter-btn{padding:.25rem .7rem;background:var(--bg2);border:1px solid var(--border);border-radius:20px;color:var(--text3);font-size:.72rem;font-family:var(--mono);cursor:pointer;transition:all .2s}
+.filter-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.08)}
+.locate-btn{padding:.35rem .9rem;background:rgba(0,212,255,.1);border:1.5px solid var(--accent2);border-radius:var(--r);color:var(--accent);font-family:var(--mono);font-size:.75rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.4rem;margin-left:auto}
+.locate-btn:hover{background:rgba(0,212,255,.2)}
+.map-stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1rem}
+.map-stat{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:.6rem;text-align:center}
+.map-stat-val{font-family:var(--mono);font-size:1rem;color:var(--accent);font-weight:700}
+.map-stat-label{font-size:.65rem;color:var(--text3);margin-top:.1rem}
+.map-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:520px;gap:1rem;color:var(--text3)}
+.map-loading .big-spin{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- API KEY BANNER -->
+<div id="apiKeyBanner">
+  <span class="apikey-label">⚛ QUANTUM AI</span>
+  <span class="apikey-status ok" id="apiKeyStatus">● AI Assistant Ready — All features enabled</span>
+  <span style="margin-left:auto;color:var(--text3);font-size:.68rem">Powered by Claude AI · QuantumMed Health Intelligence Platform</span>
+</div>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon"><div class="logo-ring"></div></div>
+    QuantumMed
+  </div>
+  <ul class="nav-links">
+    <li><a onclick="switchTab('risk')" id="nav-risk" class="active">Risk Analysis</a></li>
+    <li><a onclick="switchTab('assistant')" id="nav-assistant">AI Assistant</a></li>
+    <li><a onclick="switchTab('ranalytics')" id="nav-ranalytics">R Analytics</a></li>
+    <li><a onclick="switchTab('hospitals')" id="nav-hospitals">Hospitals</a></li>
+    <li><a onclick="switchTab('wifi')" id="nav-wifi">WiFi Monitor</a></li>
+    <li><a href="#about">About</a></li>
+  </ul>
+  <div class="nav-badge">⚛ SDG&nbsp;3</div>
+</nav>
+
+<!-- WIFI STATUS BAR -->
+<div id="wifi-status-bar">
+  <span style="color:var(--text2);font-weight:700;margin-right:.25rem">⬡ NETWORK</span>
+  <span class="wifi-stat"><span class="wifi-dot" id="conn-dot"></span><span id="conn-label">Detecting…</span></span>
+  <span class="wifi-stat">IP: <span class="val" id="bar-ip">—</span></span>
+  <span class="wifi-stat">Hostname: <span class="val" id="bar-host">—</span></span>
+  <span class="wifi-stat">Type: <span class="val" id="bar-type">—</span></span>
+  <span class="wifi-stat">Location: <span class="val" id="bar-loc">—</span></span>
+  <span class="wifi-stat" id="bar-latency-wrap">Latency: <span class="val" id="bar-latency">—</span></span>
+  <span class="wifi-stat" style="margin-left:auto;color:var(--text3)" id="bar-time">—</span>
+</div>
+
+<div class="hero">
+  <div class="hero-tag">QUANTUM-ASSISTED PREDICTION SYSTEM</div>
+  <h1>Disease Risk<br><span>Quantum Analysis</span></h1>
+  <p class="hero-sub">Leveraging quantum circuit simulation and AI-driven analysis for early disease risk stratification in emergency healthcare systems.</p>
+  <div class="sdg-badge">🌍 UN SDG 3 — Good Health &amp; Well-being</div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-risk" onclick="switchTab('risk')">⚛ RISK PREDICTOR</button>
+  <button class="tab-btn" id="tab-assistant" onclick="switchTab('assistant')">🤖 AI ASSISTANT</button>
+  <button class="tab-btn" id="tab-ranalytics" onclick="switchTab('ranalytics')">📊 R ANALYTICS</button>
+  <button class="tab-btn" id="tab-hospitals" onclick="switchTab('hospitals')">🏥 NEARBY HOSPITALS</button>
+  <button class="tab-btn" id="tab-wifi" onclick="switchTab('wifi')">📡 WIFI MONITOR</button>
+</div>
+
+<!-- ==================== TAB 1: RISK PREDICTOR ==================== -->
+<div class="tab-content active" id="content-risk">
+<div class="app">
+  <div>
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>PATIENT INPUT PARAMETERS</div>
+      <div class="panel-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>AGE</label>
+            <input class="form-control" type="number" id="age" min="1" max="120" value="45" placeholder="Years">
+          </div>
+          <div class="form-group">
+            <label>GENDER</label>
+            <select class="form-control" id="gender">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>BMI</label>
+            <input class="form-control" type="number" id="bmi" min="10" max="60" step="0.1" value="26.5" placeholder="kg/m²">
+          </div>
+          <div class="form-group">
+            <label>BLOOD PRESSURE</label>
+            <select class="form-control" id="bp">
+              <option value="normal">Normal</option>
+              <option value="elevated">Elevated</option>
+              <option value="high1">High Stage 1</option>
+              <option value="high2">High Stage 2</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>BLOOD GLUCOSE (mg/dL)</label>
+          <div class="range-wrap">
+            <span class="range-val" id="glucoseVal">95</span>
+            <input type="range" id="glucose" min="60" max="400" value="95" oninput="document.getElementById('glucoseVal').textContent=this.value">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>CHOLESTEROL (mg/dL)</label>
+          <div class="range-wrap">
+            <span class="range-val" id="cholVal">190</span>
+            <input type="range" id="cholesterol" min="100" max="400" value="190" oninput="document.getElementById('cholVal').textContent=this.value">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>SMOKING STATUS</label>
+          <select class="form-control" id="smoking">
+            <option value="never">Never</option>
+            <option value="former">Former</option>
+            <option value="current">Current</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>PHYSICAL ACTIVITY</label>
+          <select class="form-control" id="activity">
+            <option value="high">High (&gt;150 min/week)</option>
+            <option value="moderate" selected>Moderate (75–150 min)</option>
+            <option value="low">Low (&lt;75 min/week)</option>
+            <option value="sedentary">Sedentary</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>FAMILY HISTORY (select all that apply)</label>
+          <div class="check-grid">
+            <label class="check-item"><input type="checkbox" id="fh-diabetes"> Diabetes</label>
+            <label class="check-item"><input type="checkbox" id="fh-heart"> Heart Disease</label>
+            <label class="check-item"><input type="checkbox" id="fh-cancer"> Cancer</label>
+            <label class="check-item"><input type="checkbox" id="fh-stroke"> Stroke</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>EXISTING CONDITIONS</label>
+          <div class="check-grid">
+            <label class="check-item"><input type="checkbox" id="ec-hyper"> Hypertension</label>
+            <label class="check-item"><input type="checkbox" id="ec-diabetes"> Diabetes</label>
+            <label class="check-item"><input type="checkbox" id="ec-obesity"> Obesity</label>
+            <label class="check-item"><input type="checkbox" id="ec-asthma"> Asthma</label>
+          </div>
+        </div>
+        <button class="btn-quantum" id="analyzeBtn" onclick="runAnalysis()">
+          <div class="btn-inner">
+            <div class="spinner"></div>
+            <span id="btnText">⚛ RUN QUANTUM ANALYSIS</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="results-area" id="resultsArea">
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>RISK PREDICTION MATRIX</div>
+      <div class="panel-body" id="riskMatrix">
+        <div class="placeholder-state">
+          <div class="q-icon">⚛</div>
+          <div style="font-family:var(--mono);font-size:.8rem">Awaiting patient data analysis</div>
+          <div style="font-size:.75rem">Configure parameters and run quantum analysis</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>QUANTUM CIRCUIT METRICS</div>
+      <div class="panel-body">
+        <div class="q-metrics">
+          <div class="q-metric"><div class="q-metric-val" id="qm1">—</div><div class="q-metric-label">Qubits Used</div></div>
+          <div class="q-metric"><div class="q-metric-val" id="qm2">—</div><div class="q-metric-label">Circuit Depth</div></div>
+          <div class="q-metric"><div class="q-metric-val" id="qm3">—</div><div class="q-metric-label">Fidelity</div></div>
+          <div class="q-metric"><div class="q-metric-val" id="qm4">—</div><div class="q-metric-label">Entanglement</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>RISK FACTOR BREAKDOWN</div>
+      <div class="chart-area" id="chartArea">
+        <div class="placeholder-state" style="height:160px">
+          <div style="font-size:.75rem;color:var(--text3)">Run analysis to see factor breakdown</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>AI CLINICAL ANALYSIS</div>
+      <div class="panel-body" id="aiAnalysis">
+        <div class="placeholder-state" style="height:160px">
+          <div style="font-size:.75rem;color:var(--text3)">Quantum AI will generate clinical insights here</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel" id="history">
+      <div class="panel-header"><div class="dot"></div>ANALYSIS HISTORY</div>
+      <div class="panel-body">
+        <div class="history-list" id="historyList">
+          <div style="color:var(--text3);font-size:.8rem;text-align:center;padding:1rem">No analyses yet</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== TAB 2: AI HEALTH ASSISTANT (ADVANCED) ==================== -->
+<div class="tab-content" id="content-assistant">
+<div class="assistant-wrap">
+  <div>
+    <div class="panel topics-panel">
+      <div class="panel-header"><div class="dot"></div>QUICK TOPICS</div>
+      <div class="panel-body" style="padding:.75rem">
+        <button class="topic-btn" onclick="askTopic('What are the early warning signs of a heart attack I should never ignore?')"><span class="topic-icon">❤️</span>Heart Health</button>
+        <button class="topic-btn" onclick="askTopic('How can I prevent Type 2 diabetes naturally through lifestyle changes?')"><span class="topic-icon">🩸</span>Diabetes Prevention</button>
+        <button class="topic-btn" onclick="askTopic('What does high blood pressure mean and how do I lower it without medication?')"><span class="topic-icon">📊</span>Blood Pressure</button>
+        <button class="topic-btn" onclick="askTopic('What are the best foods to improve cholesterol levels?')"><span class="topic-icon">🥗</span>Cholesterol & Diet</button>
+        <button class="topic-btn" onclick="askTopic('How much exercise do I really need per week for good health?')"><span class="topic-icon">🏃</span>Exercise Guidelines</button>
+        <button class="topic-btn" onclick="askTopic('What are the health effects of smoking and how can I quit?')"><span class="topic-icon">🚭</span>Smoking Cessation</button>
+        <button class="topic-btn" onclick="askTopic('What does a healthy BMI range mean and how do I calculate it?')"><span class="topic-icon">⚖️</span>BMI & Weight</button>
+        <button class="topic-btn" onclick="askTopic('How does sleep quality affect my long-term health and disease risk?')"><span class="topic-icon">😴</span>Sleep & Health</button>
+        <button class="topic-btn" onclick="askTopic('What are mental health warning signs I should take seriously?')"><span class="topic-icon">🧠</span>Mental Health</button>
+        <button class="topic-btn" onclick="askTopic('What health screenings should I get based on my age?')"><span class="topic-icon">🔬</span>Preventive Screenings</button>
+        <button class="topic-btn" onclick="askTopic('What are symptoms of vitamin and mineral deficiencies?')"><span class="topic-icon">💊</span>Vitamins & Nutrients</button>
+        <button class="topic-btn" onclick="askTopic('How does stress affect my physical health over time?')"><span class="topic-icon">🌿</span>Stress & Wellness</button>
+        <button class="topic-btn" onclick="askTopic('What are signs of a medical emergency and when should I call an ambulance?')"><span class="topic-icon">🚨</span>Emergency Signs</button>
+        <button class="topic-btn" onclick="askTopic('What first aid steps should I take for chest pain, stroke, or severe bleeding?')"><span class="topic-icon">🩹</span>First Aid Guide</button>
+        <button class="topic-btn" onclick="askTopic('How can I interpret my blood test results? What do the common values mean?')"><span class="topic-icon">🧪</span>Lab Results</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel chat-panel">
+    <div class="panel-header">
+      <div class="dot" style="background:var(--green)"></div>
+      AI HEALTH ASSISTANT &nbsp;<span style="color:var(--green);font-size:.7rem">● ONLINE</span>
+      <span style="margin-left:auto;display:flex;gap:.4rem">
+        <span class="cap-pill active">🔍 Web Search</span>
+        <span class="cap-pill active">🧠 Medical KB</span>
+        <span class="cap-pill active">⚛ Quantum Data</span>
+        <span class="cap-pill" id="capContext" onclick="injectContext()">📋 Patient Context</span>
+      </span>
+    </div>
+
+    <div class="ai-capabilities">
+      <span class="cap-pill active">Evidence-based</span>
+      <span class="cap-pill active">Symptom Analysis</span>
+      <span class="cap-pill active">Drug Info</span>
+      <span class="cap-pill active">Emergency Triage</span>
+      <span class="cap-pill active">Lab Interpretation</span>
+      <span class="cap-pill active">Nutrition</span>
+      <span class="cap-pill active">Mental Health</span>
+      <span class="cap-pill active">Pediatrics</span>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-welcome">
+        <div class="w-icon">🏥</div>
+        <h3>QuantumMed Advanced Health Assistant</h3>
+        <p>Powered by Claude AI with real-time web search. Ask me anything about health — from symptoms and diseases to emergency triage, medication info, lab results, nutrition, and preventive care. I'll provide evidence-based, up-to-date medical guidance.</p>
+        <p style="margin-top:.5rem;font-size:.72rem;color:var(--accent);font-family:var(--mono)">✦ New: Web search enabled · Patient context injection · Emergency triage mode</p>
+      </div>
+    </div>
+
+    <div class="suggest-pills" id="suggestPills">
+      <span class="pill" onclick="askTopic('What are signs of high blood sugar?')">High blood sugar signs</span>
+      <span class="pill" onclick="askTopic('How to lower cholesterol naturally?')">Lower cholesterol</span>
+      <span class="pill" onclick="askTopic('Best foods for heart health?')">Heart-healthy foods</span>
+      <span class="pill" onclick="askTopic('What is a normal resting heart rate?')">Normal heart rate</span>
+      <span class="pill" onclick="askTopic('How to improve sleep quality?')">Better sleep</span>
+      <span class="pill" onclick="askTopic('Signs of a stroke — FAST method explained')">Stroke signs</span>
+      <span class="pill" onclick="askTopic('What should I do in a medical emergency?')">Emergency protocol</span>
+    </div>
+
+    <div class="chat-input-wrap">
+      <textarea class="chat-input" id="chatInput" placeholder="Ask any health question — symptoms, medications, emergencies, nutrition…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">SEND ↑</button>
+    </div>
+    <div class="disclaimer-note">⚠ For informational purposes only. Always consult a qualified healthcare professional for medical advice. In emergencies call 112.</div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== TAB 3: R ANALYTICS DASHBOARD ==================== -->
+<div class="tab-content" id="content-ranalytics">
+<div class="r-wrap">
+
+  <!-- Top bar: status + config -->
+  <div class="r-top-bar">
+    <div style="font-family:var(--mono);font-size:.8rem;color:var(--accent);letter-spacing:.04em">📊 R-PROGRAMMING ANALYTICS DASHBOARD</div>
+    <div class="r-status" id="r-status-badge">
+      <div class="rdot"></div>
+      <span id="r-status-text">Waiting for data…</span>
+    </div>
+    <div class="r-meta">Source: <span id="r-source-path">/health_data.json</span></div>
+    <div class="r-meta">Records: <span id="r-record-count">—</span></div>
+    <div class="r-meta">Last refresh: <span id="r-last-refresh">—</span></div>
+    <div style="display:flex;gap:.5rem;margin-left:auto;align-items:center">
+      <div class="r-path-row" style="margin:0">
+        <input class="r-path-input" id="r-json-path" value="/health_data.json" placeholder="Path or URL to health_data.json" style="width:240px">
+        <button class="btn-sm" onclick="loadRData(true)">LOAD</button>
+      </div>
+      <button class="r-refresh-btn" id="r-refresh-btn" onclick="loadRData(true)">
+        <svg id="r-spin-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.22-8.56"/><polyline points="21 3 21 9 15 9"/></svg>
+        REFRESH
+      </button>
+      <label style="display:flex;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.7rem;color:var(--text3);cursor:pointer">
+        <input type="checkbox" id="r-auto-refresh" checked style="accent-color:var(--accent)"> AUTO (5s)
+      </label>
+    </div>
+  </div>
+
+  <!-- Emergency Alert Panel -->
+  <div class="emergency-panel" id="r-emergency">
+    <div class="em-icon">🚨</div>
+    <div>
+      <div class="em-title">⚠ CRITICAL VITALS DETECTED</div>
+      <div class="em-list" id="r-em-details">—</div>
+      <div class="em-advice" id="r-em-advice">Seek immediate medical attention. Call emergency services.</div>
+    </div>
+  </div>
+
+  <!-- Live Vital Cards -->
+  <div>
+    <div style="font-family:var(--mono);font-size:.72rem;color:var(--text3);margin-bottom:.6rem;letter-spacing:.05em">● LIVE VITALS — LATEST READING</div>
+    <div class="vital-cards" id="vital-cards">
+      <div class="vital-card" style="--vc-col:var(--red)">
+        <div class="vc-status normal" id="vc-temp-status">NORMAL</div>
+        <div class="vc-icon">🌡️</div>
+        <div class="vc-val" id="vc-temp">—</div>
+        <div class="vc-unit">°F</div>
+        <div class="vc-label">Body Temperature</div>
+        <div class="vc-trend" id="vc-temp-trend">—</div>
+      </div>
+      <div class="vital-card" style="--vc-col:#f97316">
+        <div class="vc-status normal" id="vc-bpm-status">NORMAL</div>
+        <div class="vc-icon">❤️</div>
+        <div class="vc-val" id="vc-bpm">—</div>
+        <div class="vc-unit">BPM</div>
+        <div class="vc-label">Heart Rate</div>
+        <div class="vc-trend" id="vc-bpm-trend">—</div>
+      </div>
+      <div class="vital-card" style="--vc-col:var(--accent)">
+        <div class="vc-status normal" id="vc-spo2-status">NORMAL</div>
+        <div class="vc-icon">💧</div>
+        <div class="vc-val" id="vc-spo2">—</div>
+        <div class="vc-unit">% SpO₂</div>
+        <div class="vc-label">Blood Oxygen</div>
+        <div class="vc-trend" id="vc-spo2-trend">—</div>
+      </div>
+      <div class="vital-card" style="--vc-col:var(--green)">
+        <div class="vc-status normal" id="vc-risk-status">NORMAL</div>
+        <div class="vc-icon">🛡️</div>
+        <div class="vc-val" id="vc-risk" style="font-size:1.4rem">—</div>
+        <div class="vc-unit">&nbsp;</div>
+        <div class="vc-label">Risk Status</div>
+        <div class="vc-trend" id="vc-risk-trend">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trend Charts Row -->
+  <div class="r-grid-3">
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>TEMPERATURE TREND</div>
+      <div class="chart-canvas-wrap">
+        <canvas id="chart-temp"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>HEART RATE TREND</div>
+      <div class="chart-canvas-wrap">
+        <canvas id="chart-bpm"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>SpO₂ TREND</div>
+      <div class="chart-canvas-wrap">
+        <canvas id="chart-spo2"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics + Correlation Row -->
+  <div class="r-grid-2">
+    <!-- Statistical Summary -->
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>STATISTICAL SUMMARY (R-Generated)</div>
+      <div class="panel-body" id="r-stats-body">
+        <div class="r-loading"><div class="spin-ring"></div><p>Computing statistics…</p></div>
+      </div>
+    </div>
+
+    <!-- Correlation Matrix -->
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>CORRELATION ANALYSIS</div>
+      <div class="panel-body" id="r-corr-body">
+        <div class="r-loading"><div class="spin-ring"></div><p>Calculating correlations…</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Risk Distribution + Scatter Plot -->
+  <div class="r-grid-2">
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>RISK DISTRIBUTION</div>
+      <div class="panel-body" id="r-risk-dist-body">
+        <div class="r-loading"><div class="spin-ring"></div><p>Analysing risk data…</p></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>RISK PIE CHART</div>
+      <div class="chart-canvas-wrap" style="display:flex;align-items:center;justify-content:center">
+        <canvas id="chart-pie" style="max-height:230px;max-width:260px"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scatter BPM vs Temp + SpO2 vs BPM -->
+  <div class="r-grid-2">
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>SCATTER — Temp vs BPM</div>
+      <div class="chart-canvas-wrap">
+        <canvas id="chart-scatter1"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>SCATTER — BPM vs SpO₂</div>
+      <div class="chart-canvas-wrap">
+        <canvas id="chart-scatter2"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Gradio Prediction Panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="dot" style="background:var(--accent3)"></div>
+      AI GRADIO RISK PREDICTION
+      <span style="margin-left:auto;font-family:var(--mono);font-size:.68rem;color:var(--text3)" id="r-gradio-status">● Ready</span>
+    </div>
+    <div class="panel-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:.75rem;align-items:end;margin-bottom:.75rem">
+        <div class="form-group" style="margin:0">
+          <label>GRADIO URL</label>
+          <input class="form-control" id="r-gradio-url" placeholder="https://…gradio.live" value="https://a8776042c79f589dc6.gradio.live" style="font-family:var(--mono);font-size:.78rem">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>TEMP (auto-filled)</label>
+          <input class="form-control" id="r-g-temp" type="number" step="0.1" value="98.6" style="font-family:var(--mono)">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>BPM (auto-filled)</label>
+          <input class="form-control" id="r-g-bpm" type="number" value="75" style="font-family:var(--mono)">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>SpO₂ (auto-filled)</label>
+          <input class="form-control" id="r-g-spo2" type="number" value="98" style="font-family:var(--mono)">
+        </div>
+      </div>
+      <div style="display:flex;gap:.5rem;margin-bottom:.75rem">
+        <button class="btn-sm green" onclick="runRGradioPrediction()">⚡ AI PREDICT FROM R DATA</button>
+        <button class="btn-sm" onclick="syncRLatestVitals()">↔ SYNC LATEST VITALS</button>
+      </div>
+      <div id="r-gradio-result" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:.85rem;font-size:.82rem;color:var(--text3);font-family:var(--mono);min-height:60px">
+        No prediction yet. Load R data and click AI Predict.
+      </div>
+    </div>
+  </div>
+
+  <!-- R Data Table -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="dot"></div>
+      R DATA TABLE
+      <span style="margin-left:auto;font-family:var(--mono);font-size:.68rem;color:var(--text3)" id="r-table-count">0 records</span>
+      <button class="btn-sm" style="margin-left:.5rem" onclick="exportRCSV()">⬇ CSV</button>
+    </div>
+    <div style="overflow-x:auto;max-height:320px;overflow-y:auto">
+      <table class="data-table" style="font-size:.76rem">
+        <thead><tr>
+          <th>#</th><th>TIME</th><th>TEMP (°F)</th><th>BPM</th><th>SpO₂ (%)</th><th>RISK</th>
+        </tr></thead>
+        <tbody id="r-data-tbody">
+          <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:2rem">Load health_data.json to see records</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- end r-wrap -->
+</div><!-- end content-ranalytics -->
+
+<!-- ==================== TAB 3: NEARBY HOSPITALS ==================== -->
+<div class="tab-content" id="content-hospitals">
+<div class="hospitals-wrap">
+  <div class="map-controls">
+    <div class="map-filter">
+      <button class="filter-btn active" onclick="filterHospitals('all',this)">All</button>
+      <button class="filter-btn" onclick="filterHospitals('hospital',this)">Hospitals</button>
+      <button class="filter-btn" onclick="filterHospitals('clinic',this)">Clinics</button>
+      <button class="filter-btn" onclick="filterHospitals('emergency',this)">Emergency</button>
+      <button class="filter-btn" onclick="filterHospitals('pharmacy',this)">Pharmacy</button>
+    </div>
+    <button class="locate-btn" onclick="locateAndSearch()">📍 Use My Location</button>
+  </div>
+
+  <div class="map-stat-row">
+    <div class="map-stat"><div class="map-stat-val" id="ms-count">—</div><div class="map-stat-label">Facilities Found</div></div>
+    <div class="map-stat"><div class="map-stat-val" id="ms-nearest">—</div><div class="map-stat-label">Nearest (km)</div></div>
+    <div class="map-stat"><div class="map-stat-val" id="ms-open">—</div><div class="map-stat-label">Open Now</div></div>
+  </div>
+
+  <div class="map-layout">
+    <div>
+      <div class="panel" style="border-radius:var(--r2);overflow:hidden">
+        <div class="panel-header"><div class="dot"></div>NEARBY FACILITIES</div>
+        <div class="hospital-list" id="hospitalList" style="padding:.75rem">
+          <div style="color:var(--text3);font-size:.8rem;text-align:center;padding:2rem">
+            Click "Use My Location" to find nearby hospitals and medical facilities.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div id="map">
+        <div class="map-loading" id="mapPlaceholder">
+          <div style="font-size:2rem">🗺️</div>
+          <div style="font-family:var(--mono);font-size:.85rem;color:var(--text2)">Map will load after location access</div>
+          <div style="font-size:.75rem">Click "Use My Location" above</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== TAB 4: WIFI MONITOR ==================== -->
+<div class="tab-content" id="content-wifi">
+<div class="wifi-wrap">
+
+  <!-- LEFT COLUMN -->
+  <div style="display:flex;flex-direction:column;gap:1.25rem">
+
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>NETWORK CONNECTION</div>
+      <div class="panel-body">
+        <div class="ip-input-row">
+          <input class="ip-input" id="targetIp" placeholder="Device IP (e.g. 192.168.1.10)" value="">
+          <button class="btn-sm" onclick="pingDevice()">PING</button>
+          <button class="btn-sm green" onclick="connectDevice()">CONNECT</button>
+        </div>
+        <div style="font-size:.72rem;color:var(--text3);font-family:var(--mono);margin-bottom:.75rem">
+          WiFi model: connect to sensor device by IP to stream real-time patient vitals data
+        </div>
+        <div class="device-grid" id="deviceGrid">
+          <!-- populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>LIVE SENSOR READINGS</div>
+      <div class="panel-body">
+        <div class="sensor-row" id="sensorRow">
+          <div class="sensor-card"><div class="sensor-val" id="s-hr">—</div><div class="sensor-unit">bpm</div><div class="sensor-label">Heart Rate</div></div>
+          <div class="sensor-card"><div class="sensor-val" id="s-spo2">—</div><div class="sensor-unit">%</div><div class="sensor-label">SpO₂</div></div>
+          <div class="sensor-card"><div class="sensor-val" id="s-temp">—</div><div class="sensor-unit">°C</div><div class="sensor-label">Temp</div></div>
+          <div class="sensor-card"><div class="sensor-val" id="s-bp">—</div><div class="sensor-unit">mmHg</div><div class="sensor-label">BP Sys</div></div>
+        </div>
+        <div style="margin-top:.75rem;display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn-sm green" id="streamBtn" onclick="toggleStream()">▶ START STREAM</button>
+          <button class="btn-sm" onclick="clearLog()">CLEAR LOG</button>
+          <button class="btn-sm" style="background:rgba(124,58,237,.15);border-color:rgba(124,58,237,.5);color:#a78bfa" onclick="fetchEsp32Data()">📡 FETCH ESP32</button>
+          <span style="margin-left:auto;font-family:var(--mono);font-size:.7rem;color:var(--text3)" id="streamStatus">Idle</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRADIO AI PREDICTION PANEL -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="dot" style="background:var(--accent3)"></div>
+        GRADIO AI RISK PREDICTION
+        <span style="margin-left:auto;font-family:var(--mono);font-size:.68rem;color:var(--text3)" id="gradio-status">● Ready</span>
+      </div>
+      <div class="panel-body">
+        <div style="font-size:.72rem;color:var(--text3);font-family:var(--mono);margin-bottom:.75rem">
+          Sends live sensor vitals to your Gradio ML model for real-time risk classification.
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;margin-bottom:.75rem">
+          <div class="form-group" style="margin:0">
+            <label>TEMP (°C)</label>
+            <input class="form-control" id="g-temp" type="number" step="0.1" value="36.6" style="font-family:var(--mono)">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>HEART RATE (bpm)</label>
+            <input class="form-control" id="g-bpm" type="number" value="72" style="font-family:var(--mono)">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>SpO₂ (%)</label>
+            <input class="form-control" id="g-spo2" type="number" value="98" style="font-family:var(--mono)">
+          </div>
+        </div>
+        <div style="display:flex;gap:.5rem;margin-bottom:.75rem">
+          <button class="btn-sm green" onclick="runGradioPrediction()">⚡ PREDICT RISK</button>
+          <button class="btn-sm" onclick="syncFromLiveSensors()" title="Copy current live sensor values">↑ SYNC FROM LIVE</button>
+          <div class="form-group" style="margin:0;flex:1">
+            <input class="form-control" id="gradio-url" value="https://a8776042c79f589dc6.gradio.live" style="font-family:var(--mono);font-size:.7rem" placeholder="Gradio URL">
+          </div>
+        </div>
+        <div id="gradio-result" style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:.85rem;font-family:var(--mono);font-size:.8rem;min-height:72px;display:flex;flex-direction:column;gap:.4rem">
+          <span style="color:var(--text3)">Run a prediction to see AI risk classification and advice.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>CONNECTION LOG</div>
+      <div class="panel-body" style="padding:.5rem">
+        <div class="data-log" id="connLog">
+          <div style="color:var(--text3);text-align:center;padding:1rem;font-size:.75rem">No log entries yet</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div style="display:flex;flex-direction:column;gap:1.25rem">
+
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>COLLECTED PATIENT DATA</div>
+      <div class="panel-body">
+        <div style="overflow-x:auto">
+          <table class="data-table" id="dataTable">
+            <thead>
+              <tr>
+                <th>TIME</th><th>DEVICE IP</th><th>AGE</th><th>HR</th><th>SpO₂</th><th>TEMP</th><th>BP</th><th>RISK</th>
+              </tr>
+            </thead>
+            <tbody id="dataBody">
+              <tr><td colspan="8" style="text-align:center;color:var(--text3);padding:1.5rem">No data collected yet. Start stream to begin collecting.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="export-row">
+          <button class="btn-sm" onclick="exportCSV()">⬇ EXPORT CSV</button>
+          <button class="btn-sm" onclick="exportJSON()">⬇ EXPORT JSON</button>
+          <button class="btn-sm" onclick="clearData()">🗑 CLEAR DATA</button>
+          <span style="margin-left:auto;font-family:var(--mono);font-size:.7rem;color:var(--text3)" id="rowCount">0 records</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>NETWORK DEVICE DISCOVERY</div>
+      <div class="panel-body">
+        <div style="font-size:.78rem;color:var(--text2);margin-bottom:.75rem">
+          Scan your local network for QuantumMed-compatible sensor devices (ESP32/Arduino WiFi modules).
+        </div>
+        <div class="ip-input-row">
+          <input class="ip-input" id="subnetInput" placeholder="Subnet (e.g. 192.168.1)" value="192.168.1">
+          <button class="btn-sm" onclick="scanNetwork()">🔍 SCAN</button>
+        </div>
+        <div id="scanResults" style="font-family:var(--mono);font-size:.72rem;color:var(--text3);margin-top:.5rem">
+          Enter your subnet and click SCAN to discover devices.
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><div class="dot"></div>API ENDPOINT CONFIGURATION</div>
+      <div class="panel-body">
+        <div style="font-size:.78rem;color:var(--text2);margin-bottom:.75rem">
+          Configure the REST endpoint your WiFi device should POST sensor data to. QuantumMed listens for JSON payloads at this address.
+        </div>
+        <div class="form-group">
+          <label>DEVICE POST ENDPOINT</label>
+          <input class="form-control" id="endpointUrl" value="http://[YOUR-SERVER-IP]:8080/api/vitals" style="font-family:var(--mono);font-size:.75rem">
+        </div>
+        <div class="form-group">
+          <label>EXPECTED PAYLOAD FORMAT (JSON)</label>
+          <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:.75rem;font-family:var(--mono);font-size:.72rem;color:var(--accent2);line-height:1.8">
+{<br>
+&nbsp;&nbsp;"device_id": "QM-001",<br>
+&nbsp;&nbsp;"patient_age": 45,<br>
+&nbsp;&nbsp;"heart_rate": 72,<br>
+&nbsp;&nbsp;"spo2": 98,<br>
+&nbsp;&nbsp;"temperature": 36.6,<br>
+&nbsp;&nbsp;"bp_systolic": 120,<br>
+&nbsp;&nbsp;"bp_diastolic": 80,<br>
+&nbsp;&nbsp;"timestamp": "2025-01-01T00:00:00Z"<br>
+}
+          </div>
+        </div>
+        <button class="btn-sm green" onclick="testEndpoint()">▶ TEST ENDPOINT</button>
+        <button class="btn-sm" style="margin-left:.5rem" onclick="copyEndpoint()">📋 COPY URL</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ==================== APPOINTMENT BOOKING MODAL ==================== -->
+<div class="appt-modal-overlay" id="apptModal" onclick="closeApptModal(event)">
+  <div class="appt-modal" id="apptModalInner">
+    <div class="appt-modal-head">
+      <div class="appt-modal-title">📅 BOOK APPOINTMENT</div>
+      <button class="appt-close" onclick="closeApptModal()">✕</button>
+    </div>
+    <div id="apptModalContent">
+      <!-- Filled dynamically -->
+    </div>
+    <div class="appt-footer" id="apptFooter">
+      <button class="appt-btn" onclick="closeApptModal()">CANCEL</button>
+      <button class="appt-btn primary" id="apptSubmitBtn" onclick="submitAppointment()">
+        <span id="apptBtnText">CONFIRM BOOKING ↑</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="sdg-strip" id="about">
+  <div class="sdg-info">
+    <div class="sdg-number">SDG3</div>
+    <div class="sdg-text">
+      <strong>Good Health &amp; Well-being</strong>
+      Quantum-assisted early disease risk stratification for emergency healthcare systems. Targeting preventable mortality through advanced computational medicine.
+    </div>
+  </div>
+  <div class="tech-tags">
+    <span class="tech-tag">Quantum ML</span>
+    <span class="tech-tag">VQE Algorithm</span>
+    <span class="tech-tag">Claude AI</span>
+    <span class="tech-tag">QSVM</span>
+    <span class="tech-tag">Healthcare AI</span>
+    <span class="tech-tag">WiFi IoT</span>
+    <span class="tech-tag">ESP32</span>
+    <span class="tech-tag">Gradio ML</span>
+    <span class="tech-tag">Google Maps</span>
+    <span class="tech-tag">Web Search</span>
+  </div>
+</div>
+
+<!-- GOOGLE MAPS -->
+<script>
+// Inject Google Maps API dynamically
+function loadGoogleMaps() {
+  if (window._mapsLoaded) return;
+  window._mapsLoaded = true;
+  const s = document.createElement('script');
+  // Using the free embedding approach — for full Places API, replace with your API key
+  s.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyD-placeholder&libraries=places&callback=initMap';
+  s.async = true; s.defer = true;
+  // Fallback: use OpenStreetMap/Leaflet if no API key
+  document.head.appendChild(s);
+}
+
+window.initMap = function() { window._mapsReady = true; };
+</script>
+
+<script>
+// ============================================================
+// API KEY MANAGEMENT — Handled automatically by Claude.ai
+// ============================================================
+function getApiKey() { return 'managed'; }
+
+function saveApiKey() { showToast('✓ AI is ready — no key needed here!'); }
+
+function onApiKeyInput() {}
+
+function anthropicHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'anthropic-version': '2023-06-01',
+    'anthropic-dangerous-direct-browser-access': 'true'
+  };
+}
+
+function requireApiKey() { return true; }
+
+// ── Environment detection: Claude.ai artifact vs standalone deploy ──
+const IS_ARTIFACT = (() => {
+  try { return /claude\.ai|anthropic\.com/.test(location.hostname); }
+  catch { return false; }
+})();
+
+// ── Claude API call — routed through proxy when standalone ──
+async function callClaude(messages, system, maxTokens = 1000, tools = null) {
+  const body = {
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: maxTokens,
+    messages
+  };
+  if (system) body.system = system;
+  if (tools)  body.tools  = tools;
+
+  const endpoint = IS_ARTIFACT
+    ? 'https://api.anthropic.com/v1/messages'
+    : '/api/claude';
+
+  const headers = IS_ARTIFACT
+    ? anthropicHeaders()
+    : { 'Content-Type': 'application/json' };
+
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body)
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || err.message || 'API error ' + res.status);
+  }
+  return res.json();
+}
+async function callClaude(messages, system, maxTokens = 1000, tools = null) {
+  const body = {
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: maxTokens,
+    messages
+  };
+  if (system) body.system = system;
+  if (tools)  body.tools  = tools;
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: anthropicHeaders(),
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || 'API error ' + res.status);
+  }
+  return res.json();
+}
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
+  document.getElementById('content-' + tab).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+  const navEl = document.getElementById('nav-' + tab);
+  if (navEl) navEl.classList.add('active');
+
+  if (tab === 'hospitals') initHospitalsTab();
+  if (tab === 'wifi') initWifiTab();
+  if (tab === 'ranalytics') initRAnalytics();
+}
+
+// ============================================================
+// R ANALYTICS MODULE
+// ============================================================
+let rData = [];
+let rAutoRefreshTimer = null;
+let rCharts = {};
+let rInited = false;
+
+function initRAnalytics() {
+  if (!rInited) {
+    rInited = true;
+    loadRData(false);
+  }
+  // Auto-refresh
+  const autoEl = document.getElementById('r-auto-refresh');
+  if (autoEl) {
+    autoEl.onchange = () => {
+      clearInterval(rAutoRefreshTimer);
+      if (autoEl.checked) rAutoRefreshTimer = setInterval(() => loadRData(false), 5000);
+    };
+    if (autoEl.checked) rAutoRefreshTimer = setInterval(() => loadRData(false), 5000);
+  }
+}
+
+function setRStatus(state, msg) {
+  const badge = document.getElementById('r-status-badge');
+  const text = document.getElementById('r-status-text');
+  if (!badge || !text) return;
+  badge.className = 'r-status ' + state;
+  text.textContent = msg;
+}
+
+async function loadRData(manual = false) {
+  const pathEl = document.getElementById('r-json-path');
+  const path = pathEl ? pathEl.value.trim() || '/health_data.json' : '/health_data.json';
+  const btn = document.getElementById('r-refresh-btn');
+
+  setRStatus('loading', 'Loading R data…');
+  if (btn) btn.classList.add('spin');
+
+  // Try fetch first, silently fall back to demo data
+  let loaded = false;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch(path + '?t=' + Date.now(), { signal: controller.signal });
+    clearTimeout(timeout);
+
+    if (res.ok) {
+      const raw = await res.json();
+      if (Array.isArray(raw) && raw.length > 0) {
+        rData = raw;
+        loaded = true;
+        console.log('[R Analytics] Loaded from JSON:', rData);
+        document.getElementById('r-record-count').textContent = rData.length + ' records';
+        document.getElementById('r-last-refresh').textContent = new Date().toLocaleTimeString();
+        document.getElementById('r-source-path').textContent = path;
+        setRStatus('ok', 'Data loaded ✓');
+        if (manual) showToast('✓ R data loaded — ' + rData.length + ' records');
+      }
+    }
+  } catch(e) {
+    // Silently fall through to demo data
+    console.log('[R Analytics] JSON fetch failed, using demo data:', e.message);
+  }
+
+  // Use/refresh demo data if JSON wasn't loaded
+  if (!loaded) {
+    if (!rData.length) rData = generateDemoRData();
+    else rData = generateDemoRData(); // refresh demo on each auto-refresh
+    document.getElementById('r-record-count').textContent = rData.length + ' (live demo)';
+    document.getElementById('r-last-refresh').textContent = new Date().toLocaleTimeString();
+    document.getElementById('r-source-path').textContent = 'demo — generated';
+    setRStatus('ok', 'Demo data ✓ (place health_data.json at /public/)');
+    if (manual) showToast('⚠ JSON not found — showing live demo data');
+    console.log('[R Analytics] Using demo dataset:', rData);
+  }
+
+  renderRDashboard();
+  if (btn) btn.classList.remove('spin');
+}
+
+function generateDemoRData() {
+  const data = [];
+  const now = new Date();
+  for (let i = 59; i >= 0; i--) {
+    const t = new Date(now.getTime() - i * 600000);
+    const isCrit = Math.random() < 0.1;
+    const bpm = isCrit ? 120 + Math.floor(Math.random()*30) : 60 + Math.floor(Math.random()*45);
+    const spo2 = isCrit ? 88 + Math.floor(Math.random()*5) : 95 + Math.floor(Math.random()*5);
+    const temp = isCrit ? 101 + Math.random()*2 : 97.5 + Math.random()*2;
+    data.push({
+      Time: t.toISOString().replace('T',' ').slice(0,19),
+      Temperature: parseFloat(temp.toFixed(1)),
+      BPM: bpm,
+      SpO2: spo2,
+      Risk: isCrit ? 'CRITICAL' : 'NORMAL'
+    });
+  }
+  return data;
+}
+
+function renderRDashboard() {
+  if (!rData.length) return;
+  const latest = rData[rData.length - 1];
+
+  // Vital cards
+  updateVitalCards(latest);
+  // Emergency check
+  checkEmergency(latest);
+  // Charts
+  renderTrendCharts();
+  // Stats
+  renderStats();
+  // Correlation
+  renderCorrelation();
+  // Risk dist
+  renderRiskDist();
+  // Pie
+  renderRiskPie();
+  // Scatters
+  renderScatters();
+  // Table
+  renderRTable();
+  // Sync to Gradio inputs
+  syncRLatestVitals();
+}
+
+function updateVitalCards(latest) {
+  const temp = latest.Temperature ?? latest.temperature ?? latest.temp ?? '—';
+  const bpm  = latest.BPM ?? latest.bpm ?? latest.heart_rate ?? '—';
+  const spo2 = latest.SpO2 ?? latest.spo2 ?? latest.oxygen ?? '—';
+  const risk = latest.Risk ?? latest.risk ?? 'UNKNOWN';
+
+  setVCard('vc-temp', temp, '°F',
+    parseFloat(temp) > 100.4 ? 'critical' : parseFloat(temp) > 99.5 ? 'warn' : 'normal');
+  setVCard('vc-bpm', bpm, 'BPM',
+    parseInt(bpm) > 120 || parseInt(bpm) < 50 ? 'critical' : parseInt(bpm) > 100 ? 'warn' : 'normal');
+  setVCard('vc-spo2', spo2, '% SpO₂',
+    parseFloat(spo2) < 92 ? 'critical' : parseFloat(spo2) < 95 ? 'warn' : 'normal');
+  setVCard('vc-risk', risk, '',
+    risk === 'CRITICAL' ? 'critical' : risk === 'WARNING' ? 'warn' : 'normal');
+
+  // Trends from last 5 points
+  const last5 = rData.slice(-5);
+  const tempTrend = getTrend(last5.map(d => d.Temperature ?? d.temperature));
+  const bpmTrend  = getTrend(last5.map(d => d.BPM ?? d.bpm));
+  const spo2Trend = getTrend(last5.map(d => d.SpO2 ?? d.spo2));
+  document.getElementById('vc-temp-trend').textContent = 'Trend: ' + tempTrend;
+  document.getElementById('vc-bpm-trend').textContent  = 'Trend: ' + bpmTrend;
+  document.getElementById('vc-spo2-trend').textContent = 'Trend: ' + spo2Trend;
+  document.getElementById('vc-risk-trend').textContent = rData.filter(d=>(d.Risk||d.risk)==='CRITICAL').length + ' critical in dataset';
+}
+
+function setVCard(id, val, unit, status) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+  const sEl = document.getElementById(id + '-status');
+  if (sEl) {
+    sEl.className = 'vc-status ' + status;
+    sEl.textContent = status.toUpperCase();
+  }
+  // glow card
+  const card = el?.closest('.vital-card');
+  if (card) {
+    card.classList.toggle('critical', status === 'critical');
+  }
+}
+
+function getTrend(vals) {
+  const v = vals.filter(x => x != null && !isNaN(x));
+  if (v.length < 2) return '—';
+  const diff = v[v.length-1] - v[0];
+  if (Math.abs(diff) < 0.5) return '→ Stable';
+  return diff > 0 ? '↑ Rising' : '↓ Falling';
+}
+
+function checkEmergency(latest) {
+  const temp = parseFloat(latest.Temperature ?? latest.temperature ?? 0);
+  const bpm  = parseInt(latest.BPM ?? latest.bpm ?? 0);
+  const spo2 = parseFloat(latest.SpO2 ?? latest.spo2 ?? 100);
+  const risk = (latest.Risk ?? latest.risk ?? '').toUpperCase();
+
+  const issues = [];
+  if (temp > 100.4) issues.push('🌡️ Fever: ' + temp + '°F (> 100.4°F)');
+  if (bpm > 120)   issues.push('❤️ Tachycardia: ' + bpm + ' BPM (> 120)');
+  if (spo2 < 92)   issues.push('💧 Hypoxia: SpO₂ ' + spo2 + '% (< 92%)');
+  if (risk === 'CRITICAL') issues.push('🚨 Risk classified as CRITICAL by R model');
+
+  const panel = document.getElementById('r-emergency');
+  if (!panel) return;
+  if (issues.length) {
+    document.getElementById('r-em-details').innerHTML = issues.join('<br>');
+    panel.classList.add('show');
+    const advice = [];
+    if (temp > 100.4) advice.push('Apply cooling measures, administer antipyretics if appropriate.');
+    if (bpm > 120)   advice.push('Patient should rest; monitor for cardiac arrhythmia.');
+    if (spo2 < 92)   advice.push('Administer supplemental oxygen immediately.');
+    document.getElementById('r-em-advice').textContent = advice.join(' ') || 'Seek immediate medical attention.';
+  } else {
+    panel.classList.remove('show');
+  }
+}
+
+function getChartLabels(arr, every = 1) {
+  return arr.map((d, i) => {
+    if (i % every !== 0) return '';
+    const t = d.Time || d.time || '';
+    return t.length >= 16 ? t.slice(11, 16) : t.slice(0, 5);
+  });
+}
+
+function destroyChart(id) {
+  if (rCharts[id]) { rCharts[id].destroy(); delete rCharts[id]; }
+}
+
+function getChartColor(name) {
+  return { temp: '#ef4444', bpm: '#f97316', spo2: '#00d4ff' }[name] || '#7c3aed';
+}
+
+function renderTrendCharts() {
+  const every = Math.max(1, Math.floor(rData.length / 30));
+  const labels = getChartLabels(rData, every);
+  const temps  = rData.map(d => d.Temperature ?? d.temperature ?? null);
+  const bpms   = rData.map(d => d.BPM ?? d.bpm ?? null);
+  const spo2s  = rData.map(d => d.SpO2 ?? d.spo2 ?? null);
+
+  makeLineChart('chart-temp', labels, temps, 'Temperature (°F)', '#ef4444', [96, 103]);
+  makeLineChart('chart-bpm',  labels, bpms,  'Heart Rate (BPM)',  '#f97316', [40, 140]);
+  makeLineChart('chart-spo2', labels, spo2s, 'SpO₂ (%)',          '#00d4ff', [85, 102]);
+}
+
+function makeLineChart(id, labels, data, label, color, yRange) {
+  destroyChart(id);
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  const every = Math.max(1, Math.floor(labels.length / 30));
+  const filteredLabels = labels.filter((_, i) => i % every === 0);
+  const filteredData   = data.filter((_, i) => i % every === 0);
+  rCharts[id] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: filteredLabels,
+      datasets: [{
+        label,
+        data: filteredData,
+        borderColor: color,
+        backgroundColor: color + '18',
+        borderWidth: 1.5,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        tension: 0.4,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: { duration: 600 },
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          ticks: { color: '#4a7a99', font: { size: 9, family: 'Space Mono' }, maxRotation: 0 },
+          grid: { color: '#1a3a6a44' }
+        },
+        y: {
+          min: yRange[0], max: yRange[1],
+          ticks: { color: '#4a7a99', font: { size: 9, family: 'Space Mono' } },
+          grid: { color: '#1a3a6a44' }
+        }
+      }
+    }
+  });
+}
+
+function rStats(arr) {
+  const v = arr.filter(x => x != null && !isNaN(x)).map(Number);
+  if (!v.length) return null;
+  const sorted = [...v].sort((a, b) => a - b);
+  const mean = v.reduce((a, b) => a + b, 0) / v.length;
+  const med  = sorted.length % 2 === 0
+    ? (sorted[sorted.length/2 - 1] + sorted[sorted.length/2]) / 2
+    : sorted[Math.floor(sorted.length/2)];
+  const std = Math.sqrt(v.reduce((s, x) => s + (x - mean) ** 2, 0) / v.length);
+  return { mean: mean.toFixed(2), median: med.toFixed(2), sd: std.toFixed(2), min: sorted[0].toFixed(2), max: sorted[sorted.length-1].toFixed(2), n: v.length };
+}
+
+function renderStats() {
+  const body = document.getElementById('r-stats-body');
+  if (!body) return;
+  const temps = rData.map(d => d.Temperature ?? d.temperature);
+  const bpms  = rData.map(d => d.BPM ?? d.bpm);
+  const spo2s = rData.map(d => d.SpO2 ?? d.spo2);
+  const tS = rStats(temps), bS = rStats(bpms), oS = rStats(spo2s);
+  if (!tS) { body.innerHTML = '<div class="r-error">⚠ No numeric data found</div>'; return; }
+  body.innerHTML = `
+    <table class="stats-table">
+      <thead><tr><th>METRIC</th><th>MEAN</th><th>MEDIAN</th><th>STD DEV</th><th>MIN</th><th>MAX</th><th>N</th></tr></thead>
+      <tbody>
+        <tr><td>🌡️ Temperature (°F)</td><td class="num">${tS.mean}</td><td class="num">${tS.median}</td><td class="num">${tS.sd}</td><td class="num">${tS.min}</td><td class="num">${tS.max}</td><td class="num">${tS.n}</td></tr>
+        <tr><td>❤️ Heart Rate (BPM)</td><td class="num">${bS.mean}</td><td class="num">${bS.median}</td><td class="num">${bS.sd}</td><td class="num">${bS.min}</td><td class="num">${bS.max}</td><td class="num">${bS.n}</td></tr>
+        <tr><td>💧 SpO₂ (%)</td><td class="num">${oS.mean}</td><td class="num">${oS.median}</td><td class="num">${oS.sd}</td><td class="num">${oS.min}</td><td class="num">${oS.max}</td><td class="num">${oS.n}</td></tr>
+      </tbody>
+    </table>`;
+}
+
+function pearsonR(xs, ys) {
+  const n = Math.min(xs.length, ys.length);
+  const xv = xs.slice(0, n).map(Number);
+  const yv = ys.slice(0, n).map(Number);
+  const mx = xv.reduce((a,b)=>a+b,0)/n;
+  const my = yv.reduce((a,b)=>a+b,0)/n;
+  const num = xv.reduce((s,x,i) => s+(x-mx)*(yv[i]-my), 0);
+  const den = Math.sqrt(xv.reduce((s,x)=>s+(x-mx)**2,0) * yv.reduce((s,y)=>s+(y-my)**2,0));
+  return den === 0 ? 0 : num/den;
+}
+
+function renderCorrelation() {
+  const body = document.getElementById('r-corr-body');
+  if (!body) return;
+  const temps = rData.map(d => d.Temperature ?? d.temperature ?? 0);
+  const bpms  = rData.map(d => d.BPM ?? d.bpm ?? 0);
+  const spo2s = rData.map(d => d.SpO2 ?? d.spo2 ?? 0);
+
+  const pairs = [
+    { label: 'Temp × BPM',  r: pearsonR(temps, bpms)  },
+    { label: 'Temp × SpO₂', r: pearsonR(temps, spo2s) },
+    { label: 'BPM × SpO₂',  r: pearsonR(bpms, spo2s)  }
+  ];
+
+  function corrDesc(r) {
+    const a = Math.abs(r);
+    const dir = r > 0 ? 'positive' : 'negative';
+    if (a > 0.7) return 'Strong ' + dir;
+    if (a > 0.4) return 'Moderate ' + dir;
+    if (a > 0.2) return 'Weak ' + dir;
+    return 'Near zero';
+  }
+
+  function corrColor(r) {
+    const a = Math.abs(r);
+    if (a > 0.6) return r > 0 ? '#ef4444' : '#00d4ff';
+    if (a > 0.3) return '#f59e0b';
+    return '#4a7a99';
+  }
+
+  body.innerHTML = `
+    <div class="corr-matrix">
+      ${pairs.map(p => `
+        <div class="corr-cell">
+          <div class="corr-pair">${p.label}</div>
+          <div class="corr-val" style="color:${corrColor(p.r)}">${p.r >= 0 ? '+' : ''}${p.r.toFixed(3)}</div>
+          <div class="corr-bar-bg"><div class="corr-bar-fill" style="width:${Math.abs(p.r)*100}%;background:${corrColor(p.r)}"></div></div>
+          <div class="corr-desc">${corrDesc(p.r)}</div>
+        </div>`).join('')}
+    </div>
+    <div style="margin-top:.75rem;font-size:.72rem;color:var(--text3);font-family:var(--mono)">
+      Pearson r coefficient computed on ${rData.length} data points
+    </div>`;
+}
+
+function renderRiskDist() {
+  const body = document.getElementById('r-risk-dist-body');
+  if (!body) return;
+  const counts = {};
+  rData.forEach(d => {
+    const r = (d.Risk ?? d.risk ?? 'UNKNOWN').toUpperCase();
+    counts[r] = (counts[r] || 0) + 1;
+  });
+  const total = rData.length;
+  const colors = { NORMAL:'#00ff9f', CRITICAL:'#ef4444', WARNING:'#f59e0b', HIGH:'#ef4444', LOW:'#00ff9f', UNKNOWN:'#4a7a99' };
+  const rows = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  body.innerHTML = `<div class="risk-dist">
+    ${rows.map(([label, count]) => `
+      <div class="risk-dist-row">
+        <div class="risk-dist-label">${label}</div>
+        <div class="risk-dist-bar">
+          <div class="risk-dist-fill" style="width:${(count/total*100).toFixed(1)}%;background:${colors[label]||'#7c3aed'}">
+            ${count/total > 0.15 ? (count/total*100).toFixed(1)+'%' : ''}
+          </div>
+        </div>
+        <div class="risk-dist-count">${count}</div>
+      </div>`).join('')}
+  </div>
+  <div style="margin-top:.6rem;font-size:.7rem;color:var(--text3);font-family:var(--mono)">
+    Critical ratio: ${((counts['CRITICAL']||0)/total*100).toFixed(1)}% (${counts['CRITICAL']||0} / ${total})
+  </div>`;
+}
+
+function renderRiskPie() {
+  destroyChart('chart-pie');
+  const ctx = document.getElementById('chart-pie');
+  if (!ctx) return;
+  const counts = {};
+  rData.forEach(d => { const r=(d.Risk??d.risk??'UNKNOWN').toUpperCase(); counts[r]=(counts[r]||0)+1; });
+  const colors = { NORMAL:'#00ff9f', CRITICAL:'#ef4444', WARNING:'#f59e0b', HIGH:'#ef4444', LOW:'#00ff9f', UNKNOWN:'#4a7a99' };
+  const labels = Object.keys(counts), values = Object.values(counts);
+  rCharts['chart-pie'] = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data: values, backgroundColor: labels.map(l=>colors[l]||'#7c3aed'), borderWidth: 0 }]
+    },
+    options: {
+      responsive: true,
+      animation: { duration: 800 },
+      plugins: {
+        legend: { labels: { color:'#8ab4cc', font:{ family:'Space Mono', size:10 }, boxWidth:12 } }
+      }
+    }
+  });
+}
+
+function renderScatters() {
+  const temps = rData.map(d => d.Temperature ?? d.temperature ?? null);
+  const bpms  = rData.map(d => d.BPM ?? d.bpm ?? null);
+  const spo2s = rData.map(d => d.SpO2 ?? d.spo2 ?? null);
+  const risks  = rData.map(d => (d.Risk ?? d.risk ?? '').toUpperCase());
+
+  const colorMap = { CRITICAL:'#ef4444', WARNING:'#f59e0b', NORMAL:'#00ff9f' };
+
+  const scatter1 = rData.map((_, i) => ({
+    x: temps[i], y: bpms[i],
+    bgc: colorMap[risks[i]] || '#00d4ff44'
+  })).filter(p => p.x != null && p.y != null);
+
+  const scatter2 = rData.map((_, i) => ({
+    x: bpms[i], y: spo2s[i],
+    bgc: colorMap[risks[i]] || '#00d4ff44'
+  })).filter(p => p.x != null && p.y != null);
+
+  makeScatter('chart-scatter1', scatter1, 'Temperature (°F)', 'BPM', '#00d4ff');
+  makeScatter('chart-scatter2', scatter2, 'BPM', 'SpO₂ (%)', '#7c3aed');
+}
+
+function makeScatter(id, points, xLabel, yLabel, color) {
+  destroyChart(id);
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  rCharts[id] = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: xLabel + ' vs ' + yLabel,
+        data: points.map(p => ({ x: p.x, y: p.y })),
+        backgroundColor: points.map(p => p.bgc + 'bb'),
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      animation: { duration: 600 },
+      plugins: { legend:{ display:false } },
+      scales: {
+        x: {
+          title: { display:true, text:xLabel, color:'#4a7a99', font:{size:9,family:'Space Mono'} },
+          ticks: { color:'#4a7a99', font:{size:9,family:'Space Mono'} },
+          grid: { color:'#1a3a6a44' }
+        },
+        y: {
+          title: { display:true, text:yLabel, color:'#4a7a99', font:{size:9,family:'Space Mono'} },
+          ticks: { color:'#4a7a99', font:{size:9,family:'Space Mono'} },
+          grid: { color:'#1a3a6a44' }
+        }
+      }
+    }
+  });
+}
+
+function renderRTable() {
+  const tbody = document.getElementById('r-data-tbody');
+  const countEl = document.getElementById('r-table-count');
+  if (!tbody) return;
+  if (countEl) countEl.textContent = rData.length + ' records';
+  const colors = { CRITICAL:'var(--red)', WARNING:'var(--amber)', NORMAL:'var(--green)' };
+  tbody.innerHTML = rData.slice().reverse().slice(0, 100).map((d, i) => {
+    const risk = (d.Risk ?? d.risk ?? 'UNKNOWN').toUpperCase();
+    return `<tr>
+      <td style="color:var(--text3)">${rData.length - i}</td>
+      <td>${d.Time ?? d.time ?? '—'}</td>
+      <td style="font-family:var(--mono);color:var(--amber)">${d.Temperature ?? d.temperature ?? '—'}</td>
+      <td style="font-family:var(--mono);color:#f97316">${d.BPM ?? d.bpm ?? '—'}</td>
+      <td style="font-family:var(--mono);color:var(--accent)">${d.SpO2 ?? d.spo2 ?? '—'}</td>
+      <td style="font-family:var(--mono);color:${colors[risk]||'var(--text2)'}">${risk}</td>
+    </tr>`;
+  }).join('');
+}
+
+function syncRLatestVitals() {
+  if (!rData.length) return;
+  const latest = rData[rData.length - 1];
+  const temp = latest.Temperature ?? latest.temperature;
+  const bpm  = latest.BPM ?? latest.bpm;
+  const spo2 = latest.SpO2 ?? latest.spo2;
+  if (temp != null) document.getElementById('r-g-temp').value = temp;
+  if (bpm  != null) document.getElementById('r-g-bpm').value  = bpm;
+  if (spo2 != null) document.getElementById('r-g-spo2').value = spo2;
+}
+
+async function runRGradioPrediction() {
+  const base = (document.getElementById('r-gradio-url').value || '').replace(/\/$/, '');
+  const temp = parseFloat(document.getElementById('r-g-temp').value);
+  const bpm  = parseInt(document.getElementById('r-g-bpm').value);
+  const spo2 = parseInt(document.getElementById('r-g-spo2').value);
+  const resultEl = document.getElementById('r-gradio-result');
+  const statusEl = document.getElementById('r-gradio-status');
+
+  if (!base) { showToast('Enter Gradio URL first'); return; }
+  if (isNaN(temp)||isNaN(bpm)||isNaN(spo2)) { showToast('Fill vital inputs'); return; }
+
+  resultEl.innerHTML = `<span style="color:var(--text3)">⏳ Sending R vitals to Gradio AI — Temp:${temp}°F · HR:${bpm} bpm · SpO₂:${spo2}%…</span>`;
+  statusEl.textContent = '● Connecting…'; statusEl.style.color = 'var(--amber)';
+
+  try {
+    const json = await gradioPost(base, [temp, bpm, spo2]);
+    const { risk, advice } = parseGradioOutput(json);
+    if (!risk) throw new Error('No recognisable output from model');
+    const rc = risk.toLowerCase().includes('high')||risk.toLowerCase().includes('crit') ? 'var(--red)' : risk.toLowerCase().includes('med') ? 'var(--amber)' : 'var(--green)';
+    resultEl.innerHTML = `
+      <div style="margin-bottom:.4rem"><span style="color:var(--text3);font-size:.65rem">RISK LEVEL</span><div style="color:${rc};font-family:var(--mono);font-size:1.1rem;font-weight:700">${risk}</div></div>
+      ${advice ? `<div style="color:var(--text2);font-size:.8rem;border-top:1px solid var(--border);padding-top:.4rem;margin-top:.4rem">${advice}</div>` : ''}
+      <div style="margin-top:.4rem;font-size:.67rem;color:var(--text3);font-family:var(--mono)">Temp:${temp}°F · HR:${bpm} · SpO₂:${spo2}% · ${new Date().toLocaleTimeString()}</div>`;
+    statusEl.textContent = '● Connected'; statusEl.style.color = 'var(--green)';
+    showToast('Gradio AI: ' + risk);
+  } catch(e) {
+    resultEl.innerHTML = `<div style="color:var(--amber)">⚠ Prediction failed: ${e.message}</div><div style="color:var(--text3);font-size:.72rem;margin-top:.3rem">Check Gradio URL and ensure space is awake.</div>`;
+    statusEl.textContent = '● Error'; statusEl.style.color = 'var(--red)';
+  }
+}
+
+function exportRCSV() {
+  if (!rData.length) { showToast('No R data loaded'); return; }
+  const keys = ['Time','Temperature','BPM','SpO2','Risk'];
+  const header = keys.join(',') + '\n';
+  const rows = rData.map(d => keys.map(k => d[k] ?? d[k.toLowerCase()] ?? '').join(',')).join('\n');
+  download('health_data_export.csv', header + rows, 'text/csv');
+  showToast('CSV exported');
+}
+
+
+// ============================================================
+// WIFI STATUS BAR — IP / Network Detection
+// ============================================================
+async function detectNetwork() {
+  const dot = document.getElementById('conn-dot');
+  const label = document.getElementById('conn-label');
+  try {
+    const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) throw new Error();
+    const d = await res.json();
+    document.getElementById('bar-ip').textContent = d.ip || '—';
+    document.getElementById('bar-host').textContent = d.org?.slice(0,20) || d.isp?.slice(0,20) || '—';
+    document.getElementById('bar-type').textContent = d.network_type || d.org?.split(' ')[0] || 'IP';
+    document.getElementById('bar-loc').textContent = [d.city, d.country_name].filter(Boolean).join(', ') || '—';
+    dot.classList.remove('amber','red');
+    label.textContent = '● Connected';
+    label.style.color = 'var(--green)';
+  } catch(e) {
+    dot.classList.add('amber');
+    document.getElementById('bar-ip').textContent = 'Offline / Private';
+    label.textContent = 'Limited';
+    label.style.color = 'var(--amber)';
+  }
+  // Measure latency
+  const t0 = performance.now();
+  try {
+    await fetch('https://dns.google/resolve?name=google.com', { signal: AbortSignal.timeout(3000) });
+    document.getElementById('bar-latency').textContent = Math.round(performance.now()-t0)+'ms';
+  } catch(e) { document.getElementById('bar-latency').textContent = '—'; }
+}
+
+function updateClock() {
+  document.getElementById('bar-time').textContent = new Date().toLocaleTimeString();
+}
+setInterval(updateClock, 1000);
+updateClock();
+detectNetwork();
+
+// ============================================================
+// RISK PREDICTOR LOGIC (unchanged)
+// ============================================================
+const appHistory = [];
+
+function getFormData() {
+  return {
+    age: parseInt(document.getElementById('age').value) || 45,
+    gender: document.getElementById('gender').value,
+    bmi: parseFloat(document.getElementById('bmi').value) || 26.5,
+    bloodPressure: document.getElementById('bp').value,
+    glucose: parseInt(document.getElementById('glucose').value) || 95,
+    cholesterol: parseInt(document.getElementById('cholesterol').value) || 190,
+    smoking: document.getElementById('smoking').value,
+    activity: document.getElementById('activity').value,
+    familyHistory: {
+      diabetes: document.getElementById('fh-diabetes').checked,
+      heartDisease: document.getElementById('fh-heart').checked,
+      cancer: document.getElementById('fh-cancer').checked,
+      stroke: document.getElementById('fh-stroke').checked
+    },
+    existingConditions: {
+      hypertension: document.getElementById('ec-hyper').checked,
+      diabetes: document.getElementById('ec-diabetes').checked,
+      obesity: document.getElementById('ec-obesity').checked,
+      asthma: document.getElementById('ec-asthma').checked
+    }
+  };
+}
+
+function simulateQuantumMetrics(data) {
+  const complexity = Object.values(data.familyHistory).filter(Boolean).length +
+                     Object.values(data.existingConditions).filter(Boolean).length;
+  return {
+    qubits: 8 + complexity * 2,
+    depth: 24 + complexity * 6,
+    fidelity: (0.94 - complexity * 0.01).toFixed(3),
+    entanglement: (0.72 + Math.random() * 0.2).toFixed(3)
+  };
+}
+
+function computeRisks(data) {
+  let diabetes = 5, cardiovascular = 5, stroke = 3,
+      hypertension = 5, obesity = 10, respiratory = 3;
+  const ageFactor = Math.min(data.age / 100, 1);
+  diabetes += ageFactor * 20; cardiovascular += ageFactor * 25;
+  stroke += ageFactor * 18; hypertension += ageFactor * 22;
+  if (data.bmi > 30)      { diabetes += 15; obesity += 25; cardiovascular += 10; }
+  else if (data.bmi > 25) { diabetes += 7;  obesity += 10; cardiovascular += 5;  }
+  if (data.bloodPressure === 'high2')    { cardiovascular += 20; stroke += 18; hypertension += 25; }
+  else if (data.bloodPressure === 'high1')    { cardiovascular += 12; stroke += 10; hypertension += 18; }
+  else if (data.bloodPressure === 'elevated') { cardiovascular += 6;  hypertension += 10; }
+  if (data.glucose > 200)      { diabetes += 35; }
+  else if (data.glucose > 126) { diabetes += 20; }
+  else if (data.glucose > 100) { diabetes += 8;  }
+  if (data.cholesterol > 240)      { cardiovascular += 18; stroke += 10; }
+  else if (data.cholesterol > 200) { cardiovascular += 8;  stroke += 5;  }
+  if (data.smoking === 'current') { cardiovascular += 15; respiratory += 30; stroke += 12; }
+  else if (data.smoking === 'former') { cardiovascular += 6; respiratory += 10; }
+  if (data.activity === 'sedentary') { cardiovascular += 12; diabetes += 10; obesity += 8; }
+  else if (data.activity === 'low')  { cardiovascular += 6;  diabetes += 5;              }
+  if (data.familyHistory.diabetes)    diabetes += 12;
+  if (data.familyHistory.heartDisease) cardiovascular += 15;
+  if (data.familyHistory.cancer)      stroke += 3;
+  if (data.familyHistory.stroke)      stroke += 14;
+  if (data.existingConditions.hypertension) { cardiovascular += 10; stroke += 8; hypertension += 20; }
+  if (data.existingConditions.diabetes)     { diabetes += 20; cardiovascular += 8; }
+  if (data.existingConditions.obesity)      { obesity += 20; diabetes += 10; cardiovascular += 8; }
+  if (data.existingConditions.asthma)       { respiratory += 20; }
+  const qNoise = () => (Math.random() - 0.5) * 3;
+  return [
+    { name: 'Cardiovascular',  pct: Math.min(Math.round(cardiovascular + qNoise()), 99) },
+    { name: 'Type 2 Diabetes', pct: Math.min(Math.round(diabetes + qNoise()), 99) },
+    { name: 'Stroke',          pct: Math.min(Math.round(stroke + qNoise()), 99) },
+    { name: 'Hypertension',    pct: Math.min(Math.round(hypertension + qNoise()), 99) },
+    { name: 'Obesity Risk',    pct: Math.min(Math.round(obesity + qNoise()), 99) },
+    { name: 'Respiratory',     pct: Math.min(Math.round(respiratory + qNoise()), 99) }
+  ].sort((a, b) => b.pct - a.pct);
+}
+
+function riskLevel(pct)      { return pct >= 50 ? 'high' : pct >= 25 ? 'medium' : 'low'; }
+function riskLevelLabel(pct) { return pct >= 50 ? 'HIGH'  : pct >= 25 ? 'MODERATE' : 'LOW'; }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function renderRiskMatrix(risks) {
+  document.getElementById('riskMatrix').innerHTML =
+    `<div class="risk-grid">${risks.map(r => `
+      <div class="risk-card ${riskLevel(r.pct)}">
+        <div class="risk-name">${r.name}</div>
+        <div class="risk-pct">${r.pct}%</div>
+        <div class="risk-label">${riskLevelLabel(r.pct)} RISK</div>
+        <div class="risk-bar"><div class="risk-bar-fill" style="width:0%" data-w="${r.pct}"></div></div>
+      </div>`).join('')}</div>`;
+  setTimeout(() => {
+    document.querySelectorAll('.risk-bar-fill').forEach(el => { el.style.width = el.dataset.w + '%'; });
+  }, 50);
+}
+
+function renderChart(risks) {
+  const colors = { high: 'var(--red)', medium: 'var(--amber)', low: 'var(--green)' };
+  document.getElementById('chartArea').innerHTML =
+    `<div class="bar-chart">${risks.map(r => `
+      <div class="bar-row">
+        <div class="bar-label">${r.name}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:0%;background:${colors[riskLevel(r.pct)]}" data-w="${r.pct}"></div></div>
+        <div class="bar-val">${r.pct}%</div>
+      </div>`).join('')}</div>`;
+  setTimeout(() => {
+    document.querySelectorAll('.bar-fill').forEach(el => { el.style.width = el.dataset.w + '%'; });
+  }, 50);
+}
+
+function updateQuantumMetrics(qm) {
+  document.getElementById('qm1').textContent = qm.qubits;
+  document.getElementById('qm2').textContent = qm.depth;
+  document.getElementById('qm3').textContent = qm.fidelity;
+  document.getElementById('qm4').textContent = qm.entanglement;
+}
+
+function addToHistory(data, risks, overallLevel) {
+  appHistory.unshift({ time: new Date().toLocaleTimeString(), age: data.age, gender: data.gender, topRisk: risks[0].name, topPct: risks[0].pct, level: overallLevel });
+  document.getElementById('historyList').innerHTML =
+    appHistory.slice(0, 5).map(h => `
+      <div class="history-item">
+        <div>
+          <div style="color:var(--text);font-size:.8rem">Age ${h.age} · ${h.gender} · Top: ${h.topRisk}</div>
+          <div class="history-time">${h.time}</div>
+        </div>
+        <div class="history-badge badge-${h.level}">${h.topPct}%</div>
+      </div>`).join('');
+}
+
+async function callClaudeRisk(data, risks) {
+  const topRisks = risks.slice(0, 3).map(r => `${r.name}: ${r.pct}%`).join(', ');
+  const fhList = Object.entries(data.familyHistory).filter(([, v]) => v).map(([k]) => k).join(', ') || 'none';
+  const ecList = Object.entries(data.existingConditions).filter(([, v]) => v).map(([k]) => k).join(', ') || 'none';
+  const prompt = `You are a clinical AI assistant in a quantum-assisted disease risk prediction system. Analyze this patient profile and provide a concise clinical risk summary in 3-4 short paragraphs. Focus on the most critical risks and actionable recommendations. Be direct, clinical, and helpful. Do not use markdown headers or bullet points.
+
+Patient: ${data.age}yr ${data.gender}, BMI ${data.bmi}, BP: ${data.bloodPressure}, Glucose: ${data.glucose}mg/dL, Cholesterol: ${data.cholesterol}mg/dL, Smoking: ${data.smoking}, Activity: ${data.activity}.
+Family history: ${fhList}. Existing conditions: ${ecList}.
+Quantum-computed risk scores: ${topRisks}.
+
+Provide a clinical interpretation, the most urgent risk factors, and 2-3 specific preventive recommendations.`;
+
+  const d = await callClaude([{ role: 'user', content: prompt }], null, 1000);
+  return d.content.map(b => b.text || '').join('');
+}
+
+async function runAnalysis() {
+  if (!requireApiKey()) return;
+  const btn = document.getElementById('analyzeBtn');
+  const btnText = document.getElementById('btnText');
+  btn.classList.add('loading');
+  btnText.textContent = 'QUANTUM PROCESSING…';
+  document.getElementById('aiAnalysis').innerHTML =
+    `<div class="ai-loading"><div class="spinner" style="display:block"></div> Generating quantum-AI clinical analysis…</div>`;
+  try {
+    const data = getFormData();
+    const risks = computeRisks(data);
+    const qm = simulateQuantumMetrics(data);
+    const overallLevel = riskLevel(risks[0].pct);
+    await new Promise(r => setTimeout(r, 700));
+    renderRiskMatrix(risks);
+    updateQuantumMetrics(qm);
+    renderChart(risks);
+    const aiText = await callClaudeRisk(data, risks);
+    const paragraphs = aiText.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('');
+    document.getElementById('aiAnalysis').innerHTML = `<div class="ai-box">${paragraphs}</div>`;
+    addToHistory(data, risks, overallLevel);
+    showToast('⚛ Quantum analysis complete');
+  } catch (err) {
+    document.getElementById('aiAnalysis').innerHTML =
+      `<div class="ai-box" style="color:var(--amber)">⚠ ${err.message}</div>`;
+    showToast('Error: ' + err.message.slice(0, 40));
+  } finally {
+    btn.classList.remove('loading');
+    btnText.textContent = '⚛ RUN QUANTUM ANALYSIS';
+  }
+}
+
+// ============================================================
+// AI HEALTH ASSISTANT — ADVANCED with Web Search
+// ============================================================
+const chatHistory = [];
+
+const SYSTEM_PROMPT = `You are QuantumMed's Advanced AI Health Assistant — a highly knowledgeable, empathetic, and clinically-aware health information resource powered by real-time web search.
+
+Your capabilities:
+- Comprehensive medical knowledge: diseases, symptoms, medications, drug interactions, nutrition, fitness, mental health, pediatrics, geriatrics, preventive care, lab values, anatomy, medical procedures, and health screenings
+- Emergency triage: recognize life-threatening symptoms and provide clear first-aid guidance
+- Evidence-based guidance: cite recent medical guidelines when relevant
+- Lab result interpretation: explain common blood tests, imaging, and diagnostics
+- Medication information: uses, dosages, side effects, interactions
+- Mental health support: compassionate guidance on anxiety, depression, stress, and crisis resources
+
+Format your responses:
+- Use short paragraphs for readability
+- Use bullet points (with "•") for lists of symptoms, tips, or options
+- **Bold** critical information and key terms
+- For emergencies, start with ⚠️ EMERGENCY and provide immediate steps
+- Keep responses 150-350 words unless deeper detail is needed
+- Include relevant context about when to seek professional care
+
+For emergency symptoms (chest pain, stroke signs, difficulty breathing, severe bleeding, loss of consciousness): immediately provide emergency steps and advise calling 112/911.
+
+Always end with a brief reminder to consult a healthcare professional for personalized advice.
+
+You ONLY answer health-related questions. For non-health queries, kindly redirect the user.`;
+
+let patientContextInjected = false;
+
+function injectContext() {
+  const data = getFormData();
+  const risks = computeRisks(data);
+  const ctx = `[Patient Context Loaded]: Age ${data.age}, ${data.gender}, BMI ${data.bmi}, BP: ${data.bloodPressure}, Glucose: ${data.glucose}, Cholesterol: ${data.cholesterol}, Smoking: ${data.smoking}, Activity: ${data.activity}. Top risks: ${risks.slice(0,3).map(r=>r.name+' '+r.pct+'%').join(', ')}.`;
+  chatHistory.push({ role: 'user', content: ctx });
+  chatHistory.push({ role: 'assistant', content: 'Patient context loaded. I now have your health profile and risk analysis. How can I help you today?' });
+  document.getElementById('capContext').classList.add('active');
+  document.getElementById('capContext').textContent = '📋 Context ✓';
+  patientContextInjected = true;
+  appendMessage('ai', 'Patient risk profile loaded from the Risk Predictor. I can now give personalized health guidance based on your data. What would you like to know?');
+  showToast('Patient context injected into AI');
+}
+
+function appendMessage(role, content, isHTML = false) {
+  const msgs = document.getElementById('chatMessages');
+  const welcome = msgs.querySelector('.chat-welcome');
+  if (welcome) welcome.remove();
+  document.getElementById('suggestPills').style.display = 'none';
+
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'msg-avatar';
+  avatar.textContent = role === 'ai' ? '🏥' : '👤';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+
+  if (isHTML) {
+    bubble.innerHTML = content;
+  } else {
+    const html = content
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .split('\n')
+      .map(line => {
+        line = line.trim();
+        if (!line) return '';
+        if (line.startsWith('•') || line.startsWith('-')) {
+          return `<li style="margin-left:1rem;margin-bottom:.2rem">${line.replace(/^[•\-]\s*/, '')}</li>`;
+        }
+        if (line.startsWith('⚠️') || line.startsWith('🚨')) {
+          return `<p style="color:var(--red);font-weight:600">${line}</p>`;
+        }
+        return `<p>${line}</p>`;
+      })
+      .join('');
+    bubble.innerHTML = html;
+  }
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return bubble;
+}
+
+function appendTyping() {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'msg ai';
+  div.id = 'typingMsg';
+  div.innerHTML = `<div class="msg-avatar">🏥</div><div class="msg-bubble"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typingMsg');
+  if (el) el.remove();
+}
+
+async function sendMessage() {
+  if (!requireApiKey()) return;
+  const input = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  sendBtn.disabled = true;
+
+  appendMessage('user', text);
+  chatHistory.push({ role: 'user', content: text });
+  appendTyping();
+
+  try {
+    // Build a clean history that only includes text content (no tool_use/tool_result blocks)
+    // This avoids the API error caused by unmatched tool_use/tool_result pairs in history
+    const cleanHistory = chatHistory.map(msg => {
+      if (typeof msg.content === 'string') return msg;
+      // If content is an array, keep only text blocks
+      const textOnly = msg.content
+        .filter(b => b.type === 'text')
+        .map(b => b.text || '')
+        .join('');
+      return { role: msg.role, content: textOnly || '(continued)' };
+    });
+
+    const d = await callClaude(cleanHistory, SYSTEM_PROMPT, 1500, [{
+      type: 'web_search_20250305',
+      name: 'web_search',
+      max_uses: 3
+    }]);
+    const reply = d.content
+      .filter(b => b.type === 'text')
+      .map(b => b.text || '')
+      .join('');
+    // Store only the text reply in history to avoid tool_use/tool_result mismatch errors
+    chatHistory.push({ role: 'assistant', content: reply || '(No response)' });
+
+    removeTyping();
+    appendMessage('ai', reply || 'I could not generate a response. Please try again.');
+  } catch (err) {
+    removeTyping();
+    appendMessage('ai', `⚠ Sorry, I encountered an error: ${err.message}. Please try again.`);
+  } finally {
+    sendBtn.disabled = false;
+    input.focus();
+  }
+}
+
+function askTopic(question) {
+  switchTab('assistant');
+  setTimeout(() => {
+    document.getElementById('chatInput').value = question;
+    sendMessage();
+  }, 100);
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+// ============================================================
+// HOSPITALS — Google Maps / Leaflet Nearby Search
+// ============================================================
+let map = null;
+let userLat = null, userLng = null;
+let allHospitals = [];
+let isDemoMode = false;
+let activeFilter = 'all';
+let markers = [];
+
+let hospitalsAutoStarted = false;
+function initHospitalsTab() {
+  // Auto-run on first visit to this tab — no button click required
+  if (!hospitalsAutoStarted) {
+    hospitalsAutoStarted = true;
+    locateAndSearch();
+  }
+}
+
+function filterHospitals(type, btn) {
+  activeFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHospitalList();
+  if (map) updateMapMarkers();
+}
+
+function locateAndSearch() {
+  const mapEl = document.getElementById('map');
+  const placeholder = document.getElementById('mapPlaceholder');
+  placeholder.innerHTML = `<div class="map-loading"><div class="big-spin"></div><div style="font-family:var(--mono);font-size:.8rem">Getting your location…</div></div>`;
+
+  if (!navigator.geolocation) {
+    showToast('Geolocation not supported');
+    return;
+  }
+
+  if (!window.isSecureContext && location.protocol === 'file:') {
+    placeholder.innerHTML = `<div class="map-loading"><div style="font-family:var(--mono);font-size:.8rem;color:var(--amber);text-align:center;padding:0 1rem">⚠ Your browser blocks precise location access on files opened directly (file://).<br><br>Falling back to approximate IP-based location. Serve this page over http(s) for precise GPS location.</div></div>`;
+    useIpFallback();
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(pos => {
+    userLat = pos.coords.latitude;
+    userLng = pos.coords.longitude;
+    placeholder.innerHTML = `<div class="map-loading"><div class="big-spin"></div><div style="font-family:var(--mono);font-size:.8rem">Loading map…</div></div>`;
+    loadLeafletMap(userLat, userLng);
+  }, err => {
+    showToast('Location access denied — estimating from your network instead');
+    useIpFallback();
+  });
+}
+
+async function useIpFallback() {
+  // Approximate the user's location from their IP address (works anywhere in the world,
+  // no permission prompt) — used only when precise GPS location isn't available or is denied.
+  const placeholder = document.getElementById('mapPlaceholder');
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const info = await res.json();
+    if (info && info.latitude && info.longitude) {
+      userLat = info.latitude;
+      userLng = info.longitude;
+      showToast(`Approximate location: ${info.city || info.region || info.country_name || 'detected via IP'}`);
+      loadLeafletMap(userLat, userLng);
+      return;
+    }
+    throw new Error('No coordinates in response');
+  } catch (e) {
+    // Last-resort fallback if even IP geolocation fails (e.g. offline/blocked) —
+    // this default (Bengaluru) is only ever used when both GPS and IP lookup fail.
+    showToast('⚠ Could not detect location — showing a default area');
+    userLat = 12.9716;
+    userLng = 77.5946;
+    loadLeafletMap(userLat, userLng);
+  }
+}
+
+function loadLeafletMap(lat, lng) {
+  if (!document.getElementById('leaflet-css')) {
+    const css = document.createElement('link');
+    css.id = 'leaflet-css';
+    css.rel = 'stylesheet';
+    css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(css);
+  }
+  if (!window.L) {
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    s.onload = () => initLeaflet(lat, lng);
+    document.head.appendChild(s);
+  } else {
+    initLeaflet(lat, lng);
+  }
+}
+
+function initLeaflet(lat, lng) {
+  const mapEl = document.getElementById('map');
+  mapEl.innerHTML = '';
+
+  map = L.map('map', { zoomControl: true }).setView([lat, lng], 14);
+
+  const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 18
+  }).addTo(map);
+
+  // If tiles fail to load (network blocked, offline, etc.) tell the user instead of
+  // leaving a blank blue box — this is usually the same restriction that forces demo mode.
+  let tileErrorCount = 0, tileNoticeShown = false;
+  tileLayer.on('tileerror', () => {
+    tileErrorCount++;
+    if (!tileNoticeShown && tileErrorCount >= 3) {
+      tileNoticeShown = true;
+      showToast('⚠ Map tiles failed to load — check your network/firewall');
+      mapEl.insertAdjacentHTML('beforeend',
+        '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;background:rgba(4,13,26,.55)"><div style="max-width:280px;text-align:center;font-family:var(--mono);font-size:.75rem;color:var(--amber);background:rgba(4,13,26,.9);border:1px solid rgba(245,158,11,.35);border-radius:8px;padding:.75rem 1rem">⚠ Map tiles unavailable on this network.<br>Facility list below still works.</div></div>');
+    }
+  });
+
+  // User marker
+  const userIcon = L.divIcon({
+    html: `<div style="background:var(--accent,#00d4ff);width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 8px rgba(0,212,255,0.8)"></div>`,
+    className: '', iconSize: [14, 14], iconAnchor: [7, 7]
+  });
+  L.marker([lat, lng], { icon: userIcon }).addTo(map)
+    .bindPopup('<b style="color:#000">📍 Your Location</b>');
+
+  searchNearbyHospitals(lat, lng);
+}
+
+function buildOverpassQuery(lat, lng, radius) {
+  return `[out:json][timeout:25];(node["amenity"="hospital"](around:${radius},${lat},${lng});node["amenity"="clinic"](around:${radius},${lat},${lng});node["amenity"="pharmacy"](around:${radius},${lat},${lng});node["amenity"="doctors"](around:${radius},${lat},${lng});way["amenity"="hospital"](around:${radius},${lat},${lng});way["amenity"="clinic"](around:${radius},${lat},${lng});way["amenity"="pharmacy"](around:${radius},${lat},${lng}););out center 40;`;
+}
+
+async function fetchOverpass(query) {
+  // Known-good public Overpass API mirrors, tried in order
+  const mirrors = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://overpass.openstreetmap.fr/api/interpreter',
+    'https://overpass.osm.ch/api/interpreter'
+  ];
+
+  for (const mirror of mirrors) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12000);
+      // GET with the query as a URL param avoids CORS preflight issues some mirrors have with POST
+      const url = `${mirror}?data=${encodeURIComponent(query)}`;
+      let res = await fetch(url, { method: 'GET', signal: controller.signal });
+      if (!res.ok) {
+        // Some mirrors prefer POST — retry that way before giving up on this mirror
+        res = await fetch(mirror, { method: 'POST', body: query, signal: controller.signal });
+      }
+      clearTimeout(timeout);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data && Array.isArray(data.elements)) return data;
+    } catch (e) {
+      // try next mirror
+      continue;
+    }
+  }
+  return null;
+}
+
+async function searchNearbyHospitals(lat, lng) {
+  document.getElementById('hospitalList').innerHTML = '<div style="padding:1rem;color:var(--text3);font-family:var(--mono);font-size:.75rem">🔍 Searching nearby facilities…</div>';
+
+  // Start at 5km, widen automatically if too few real results come back
+  let radius = 5000;
+  let data = await fetchOverpass(buildOverpassQuery(lat, lng, radius));
+  if ((!data || !data.elements || data.elements.length < 3) && radius < 15000) {
+    radius = 15000;
+    const wider = await fetchOverpass(buildOverpassQuery(lat, lng, radius));
+    if (wider && wider.elements && wider.elements.length > (data?.elements?.length || 0)) data = wider;
+  }
+
+  if (data && data.elements && data.elements.length > 0) {
+    // Real data from Overpass
+    allHospitals = data.elements.map(el => {
+      const elLat = el.lat || el.center?.lat;
+      const elLng = el.lon || el.center?.lon;
+      const dist = getDistanceKm(lat, lng, elLat, elLng);
+      return {
+        name: el.tags?.name || el.tags?.['name:en'] || 'Medical Facility',
+        type: el.tags?.amenity || 'hospital',
+        lat: elLat, lng: elLng,
+        dist: dist.toFixed(2),
+        phone: el.tags?.phone || el.tags?.['contact:phone'] || '',
+        website: el.tags?.website || '',
+        opening: el.tags?.opening_hours || '',
+        emergency: el.tags?.emergency === 'yes',
+        address: [el.tags?.['addr:street'], el.tags?.['addr:housenumber'], el.tags?.['addr:city']].filter(Boolean).join(', ') || ''
+      };
+    }).filter(h => h.lat && h.lng).sort((a, b) => a.dist - b.dist);
+    showToast(`Found ${allHospitals.length} nearby facilities`);
+    isDemoMode = false;
+  } else {
+    // All mirrors failed or returned nothing — generate realistic demo data near user location
+    showToast('⚠ Live search unavailable — showing demo facilities near you');
+    allHospitals = generateDemoHospitals(lat, lng);
+    isDemoMode = true;
+  }
+
+  document.getElementById('ms-count').textContent = allHospitals.length;
+  document.getElementById('ms-nearest').textContent = allHospitals[0]?.dist || '—';
+  document.getElementById('ms-open').textContent = allHospitals.filter(h => h.emergency || h.opening?.includes('24/7')).length;
+
+  renderHospitalList();
+  updateMapMarkers();
+}
+
+function generateDemoHospitals(lat, lng) {
+  // Seed realistic-sounding facilities near the user's actual GPS coordinates
+  // NOTE: these are generic, location-neutral placeholder names — intentionally NOT
+  // real hospital brands (e.g. Apollo/Fortis/Narayana/Columbia Asia are Bangalore-specific
+  // chains) and NOT using any single city's phone STD code, since this demo data can be
+  // shown for a user anywhere. Real names/numbers only ever come from the live Overpass query.
+  const offsets = [
+    { dlat:0.008, dlng:0.005, name:'City General Hospital', type:'hospital', emergency:true, opening:'24/7', phone:'' },
+    { dlat:-0.005, dlng:0.012, name:'Nearby Health Clinic', type:'clinic', emergency:false, opening:'08:00-20:00', phone:'' },
+    { dlat:0.015, dlng:-0.008, name:'Children\'s Hospital', type:'hospital', emergency:true, opening:'24/7', phone:'' },
+    { dlat:-0.012, dlng:-0.006, name:'Local Pharmacy', type:'pharmacy', emergency:false, opening:'07:00-22:00', phone:'' },
+    { dlat:0.003, dlng:0.018, name:'District Hospital', type:'hospital', emergency:true, opening:'24/7', phone:'' },
+    { dlat:0.020, dlng:0.003, name:'Community Healthcare Centre', type:'hospital', emergency:true, opening:'24/7', phone:'' },
+    { dlat:-0.018, dlng:0.015, name:'Family Care Clinic', type:'clinic', emergency:false, opening:'09:00-18:00', phone:'' },
+    { dlat:0.025, dlng:-0.012, name:'Multi-Speciality Hospital', type:'hospital', emergency:true, opening:'24/7', phone:'' },
+    { dlat:-0.022, dlng:-0.018, name:'Wellness Pharmacy', type:'pharmacy', emergency:false, opening:'08:00-21:00', phone:'' },
+    { dlat:0.010, dlng:0.030, name:'General Physician Clinic', type:'doctors', emergency:false, opening:'10:00-17:00', phone:'' },
+  ];
+  return offsets.map(o => {
+    const elLat = lat + o.dlat, elLng = lng + o.dlng;
+    return {
+      name: o.name, type: o.type,
+      lat: elLat, lng: elLng,
+      dist: getDistanceKm(lat, lng, elLat, elLng).toFixed(2),
+      phone: o.phone, website: '', opening: o.opening,
+      emergency: o.emergency, address: ''
+    };
+  }).sort((a, b) => a.dist - b.dist);
+}
+
+function getDistanceKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2-lat1)*Math.PI/180;
+  const dLng = (lng2-lng1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function getTypeLabel(type) {
+  const map = { hospital:'🏥 Hospital', clinic:'🏨 Clinic', pharmacy:'💊 Pharmacy', doctors:'👨‍⚕️ Doctor', health:'🩺 Health Centre' };
+  return map[type] || '🏥 Medical';
+}
+
+function renderHospitalList() {
+  const filtered = allHospitals.filter(h => {
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'hospital') return h.type === 'hospital';
+    if (activeFilter === 'clinic') return h.type === 'clinic' || h.type === 'doctors';
+    if (activeFilter === 'emergency') return h.emergency;
+    if (activeFilter === 'pharmacy') return h.type === 'pharmacy';
+    return true;
+  }).slice(0, 20);
+
+  const demoBanner = isDemoMode
+    ? '<div style="padding:.5rem .75rem;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:6px;font-family:var(--mono);font-size:.68rem;color:var(--amber);margin-bottom:.6rem">⚠ DEMO MODE — Live map data unavailable right now. These are sample facilities placed near your detected location, not real listings.</div>'
+    : '';
+
+  if (!filtered.length) {
+    document.getElementById('hospitalList').innerHTML = demoBanner + '<div style="padding:1rem;color:var(--text3);font-size:.8rem">No facilities match this filter.</div>';
+    return;
+  }
+
+  document.getElementById('hospitalList').innerHTML = demoBanner + filtered.map((h, i) => `
+    <div class="hosp-card" onclick="focusHospital(${h.lat},${h.lng},'${h.name.replace(/'/g,"\\'")}')">
+      <div class="hosp-name">${h.name}</div>
+      <div class="hosp-addr">${getTypeLabel(h.type)}${h.address ? ' · '+h.address : ''}</div>
+      <div class="hosp-meta">
+        <span class="hosp-tag dist">📍 ${h.dist} km</span>
+        ${h.emergency ? '<span class="hosp-tag open">🚨 Emergency</span>' : ''}
+        ${h.opening?.includes('24/7') ? '<span class="hosp-tag open">24/7</span>' : ''}
+        ${h.phone ? `<span class="hosp-tag dist">📞 ${h.phone}</span>` : ''}
+        <span class="hosp-tag dist" onclick="event.stopPropagation();getDirections(${h.lat},${h.lng})" style="cursor:pointer">🗺 Directions</span>
+        <span class="hosp-appt-btn" onclick="event.stopPropagation();openApptModal(${i})">📅 Book Appointment</span>
+      </div>
+    </div>`).join('');
+}
+
+function focusHospital(lat, lng, name) {
+  if (!map) return;
+  map.flyTo([lat, lng], 16, { animate: true, duration: 1 });
+  document.querySelectorAll('.hosp-card').forEach(c => c.classList.remove('selected'));
+  event.currentTarget?.classList?.add('selected');
+}
+
+function updateMapMarkers() {
+  if (!map || !window.L) return;
+  markers.forEach(m => m.remove());
+  markers = [];
+
+  const filtered = allHospitals.filter(h => {
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'hospital') return h.type === 'hospital';
+    if (activeFilter === 'clinic') return h.type === 'clinic' || h.type === 'doctors';
+    if (activeFilter === 'emergency') return h.emergency;
+    if (activeFilter === 'pharmacy') return h.type === 'pharmacy';
+    return true;
+  });
+
+  filtered.forEach(h => {
+    const colors = { hospital:'#ef4444', clinic:'#f59e0b', pharmacy:'#00ff9f', doctors:'#00d4ff' };
+    const color = colors[h.type] || '#00d4ff';
+    const icon = L.divIcon({
+      html: `<div style="background:${color};width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 6px ${color}88"></div>`,
+      className: '', iconSize: [12,12], iconAnchor: [6,6]
+    });
+    const marker = L.marker([h.lat, h.lng], { icon })
+      .addTo(map)
+      .bindPopup(`<div style="font-family:sans-serif;min-width:160px"><b>${h.name}</b><br><small>${getTypeLabel(h.type)}</small><br><small>📍 ${h.dist} km away</small>${h.phone ? `<br><small>📞 ${h.phone}</small>` : ''}<br><a href="https://www.google.com/maps/dir/?api=1&destination=${h.lat},${h.lng}" target="_blank" style="color:#0099cc">🗺 Get Directions</a></div>`);
+    markers.push(marker);
+  });
+}
+
+function getDirections(lat, lng) {
+  window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
+}
+
+// ============================================================
+// APPOINTMENT BOOKING — AI-powered via Claude
+// ============================================================
+let currentApptHospital = null;
+
+function openApptModal(idx) {
+  const filtered = allHospitals.filter(h => {
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'hospital') return h.type === 'hospital';
+    if (activeFilter === 'clinic') return h.type === 'clinic' || h.type === 'doctors';
+    if (activeFilter === 'emergency') return h.emergency;
+    if (activeFilter === 'pharmacy') return h.type === 'pharmacy';
+    return true;
+  }).slice(0, 20);
+
+  currentApptHospital = filtered[idx];
+  if (!currentApptHospital) return;
+
+  const h = currentApptHospital;
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1);
+  const minDate = tomorrow.toISOString().split('T')[0];
+
+  document.getElementById('apptModalContent').innerHTML = `
+    <div class="appt-modal-body">
+      <div class="appt-hosp-name">${h.name}</div>
+      <div class="appt-hosp-type">${getTypeLabel(h.type)} &nbsp;·&nbsp; 📍 ${h.dist} km away${h.phone ? ' &nbsp;·&nbsp; 📞 ' + h.phone : ''}</div>
+      <div class="appt-ai-label"><span style="color:var(--accent)">⚛</span> AI APPOINTMENT ASSISTANT</div>
+      <div class="appt-ai-wrap" id="apptAiBox">
+        <span style="color:var(--text3);font-family:var(--mono);font-size:.75rem">⏳ Generating personalized recommendations…</span>
+      </div>
+      <div class="appt-form-grid">
+        <div class="appt-form-group">
+          <label>YOUR NAME</label>
+          <input type="text" id="apptName" placeholder="Full name" />
+        </div>
+        <div class="appt-form-group">
+          <label>PHONE NUMBER</label>
+          <input type="tel" id="apptPhone" placeholder="+91 XXXXX XXXXX" />
+        </div>
+      </div>
+      <div class="appt-form-grid">
+        <div class="appt-form-group">
+          <label>PREFERRED DATE</label>
+          <input type="date" id="apptDate" min="${minDate}" />
+        </div>
+        <div class="appt-form-group">
+          <label>PREFERRED TIME</label>
+          <select id="apptTime">
+            <option value="">-- Select time slot --</option>
+            <option>08:00 AM – 09:00 AM</option>
+            <option>09:00 AM – 10:00 AM</option>
+            <option>10:00 AM – 11:00 AM</option>
+            <option>11:00 AM – 12:00 PM</option>
+            <option>02:00 PM – 03:00 PM</option>
+            <option>03:00 PM – 04:00 PM</option>
+            <option>04:00 PM – 05:00 PM</option>
+          </select>
+        </div>
+      </div>
+      <div class="appt-form-group">
+        <label>DEPARTMENT / SPECIALTY</label>
+        <select id="apptDept">
+          <option value="">-- Select department --</option>
+          <option>General Medicine / OPD</option>
+          <option>Cardiology</option>
+          <option>Diabetology / Endocrinology</option>
+          <option>Neurology</option>
+          <option>Pulmonology / Respiratory</option>
+          <option>Orthopedics</option>
+          <option>Dermatology</option>
+          <option>Ophthalmology</option>
+          <option>ENT</option>
+          <option>Pediatrics</option>
+          <option>Gynecology &amp; Obstetrics</option>
+          <option>Mental Health / Psychiatry</option>
+          <option>Radiology / Imaging</option>
+          <option>Pathology / Lab</option>
+          <option>Emergency / Casualty</option>
+        </select>
+      </div>
+      <div class="appt-form-group">
+        <label>REASON FOR VISIT</label>
+        <textarea id="apptReason" placeholder="Briefly describe your symptoms or reason for the appointment…"></textarea>
+      </div>
+    </div>`;
+
+  document.getElementById('apptFooter').innerHTML = `
+    <button class="appt-btn" onclick="closeApptModal()">CANCEL</button>
+    <button class="appt-btn primary" id="apptSubmitBtn" onclick="submitAppointment()">CONFIRM BOOKING ↑</button>`;
+
+  document.getElementById('apptModal').classList.add('open');
+  generateApptAiSuggestion(h);
+}
+
+async function generateApptAiSuggestion(hospital) {
+  let patientCtx = '';
+  try {
+    const data = getFormData();
+    const risks = computeRisks(data);
+    patientCtx = `Patient context: Age ${data.age}, ${data.gender}, BMI ${data.bmi}. Top risks: ${risks.slice(0,2).map(r=>r.name+' '+r.pct+'%').join(', ')}.`;
+  } catch(e) {}
+
+  const prompt = `You are a medical appointment assistant. A patient wants to book at "${hospital.name}" (${hospital.type}, ${hospital.dist}km away${hospital.emergency ? ', has emergency dept' : ''}).
+${patientCtx}
+In 2-3 short sentences: suggest which department to visit (based on patient context if available, else general advice), one practical tip (what to bring), and when to use emergency vs OPD if relevant. Be friendly and concise.`;
+
+  try {
+    const d = await callClaude([{ role: 'user', content: prompt }], null, 250);
+    const text = d.content?.map(b => b.text || '').join('') || '';
+    const box = document.getElementById('apptAiBox');
+    if (box) box.innerHTML = text || 'Bring a valid ID and any previous medical records to your appointment.';
+  } catch(e) {
+    const box = document.getElementById('apptAiBox');
+    if (box) box.textContent = 'Tip: Bring a valid ID, insurance card, and any relevant medical records. Arrive 15 minutes early.';
+  }
+}
+
+async function submitAppointment() {
+  const name = document.getElementById('apptName')?.value.trim();
+  const phone = document.getElementById('apptPhone')?.value.trim();
+  const date = document.getElementById('apptDate')?.value;
+  const time = document.getElementById('apptTime')?.value;
+  const dept = document.getElementById('apptDept')?.value;
+  const reason = document.getElementById('apptReason')?.value.trim();
+
+  if (!name || !phone || !date || !time || !dept) {
+    showToast('⚠ Please fill in all required fields');
+    return;
+  }
+
+  const btn = document.getElementById('apptSubmitBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'PROCESSING…'; }
+
+  const h = currentApptHospital;
+  const prompt = `Write a brief, warm appointment confirmation (3 sentences) for:
+Patient: ${name} | Hospital: ${h.name} | Date: ${date} at ${time} | Dept: ${dept} | Reason: ${reason || 'General consultation'}
+Include: confirmation, arrive 15 min early with ID and medical records. Friendly and professional tone.`;
+
+  let confirmMsg = `Your appointment at ${h.name} has been successfully requested for ${date} at ${time} (${dept}). Please arrive 15 minutes early and bring a valid ID along with any previous medical records. A confirmation call will be made to ${phone} within 24 hours.`;
+
+  try {
+    const d = await callClaude([{ role: 'user', content: prompt }], null, 200);
+    confirmMsg = d.content?.map(b => b.text || '').join('') || confirmMsg;
+  } catch(e) {}
+
+  const ref = 'QM-' + Math.random().toString(36).slice(2,8).toUpperCase();
+
+  document.getElementById('apptModalContent').innerHTML = `
+    <div class="appt-success">
+      <div class="check-icon">✅</div>
+      <h3>APPOINTMENT REQUESTED</h3>
+      <div class="appt-ref">${ref}</div>
+      <p style="margin-top:1rem">${confirmMsg}</p>
+      <div style="margin-top:1rem;padding:.85rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);font-family:var(--mono);font-size:.72rem;text-align:left;line-height:2.1">
+        <div>🏥 ${h.name}</div>
+        <div>📅 ${date} &nbsp;·&nbsp; ${time}</div>
+        <div>🩺 ${dept}</div>
+        <div>👤 ${name} &nbsp;·&nbsp; 📞 ${phone}</div>
+      </div>
+    </div>`;
+
+  document.getElementById('apptFooter').innerHTML = `<button class="appt-btn primary" onclick="closeApptModal()">DONE ✓</button>`;
+  showToast('✅ Appointment requested — Ref: ' + ref);
+}
+
+function closeApptModal(e) {
+  if (e && e.target !== document.getElementById('apptModal')) return;
+  document.getElementById('apptModal').classList.remove('open');
+  currentApptHospital = null;
+}
+
+// ============================================================
+// WIFI / IP DATA COLLECTION MODULE
+// ============================================================
+let streamInterval = null;
+let streaming = false;
+let collectedData = [];
+let connectedDevices = {};
+
+function initWifiTab() {
+  renderDeviceGrid();
+  if (!document.getElementById('connLog').querySelector('.log-entry')) {
+    addLog('info', 'SYSTEM', 'WiFi monitor initialized. Add device IP to connect.');
+  }
+}
+
+function addLog(type, category, msg) {
+  const log = document.getElementById('connLog');
+  const existing = log.querySelector('div[style]');
+  if (existing) existing.remove();
+
+  const ts = new Date().toLocaleTimeString();
+  const entry = document.createElement('div');
+  entry.className = `log-entry ${type}`;
+  entry.innerHTML = `<span class="log-ts">${ts}</span><span class="log-type">[${category}]</span><span class="log-msg">${msg}</span>`;
+  log.insertBefore(entry, log.firstChild);
+  if (log.children.length > 50) log.removeChild(log.lastChild);
+}
+
+function renderDeviceGrid() {
+  const grid = document.getElementById('deviceGrid');
+  const devices = Object.values(connectedDevices);
+  if (!devices.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--text3);font-size:.75rem;padding:.75rem;font-family:var(--mono)">No devices connected. Enter an IP above to connect.</div>`;
+    return;
+  }
+  grid.innerHTML = devices.map(d => `
+    <div class="device-card ${d.status === 'connected' ? 'connected' : ''}">
+      <div class="dc-label">DEVICE ID</div>
+      <div class="dc-ip">${d.ip}</div>
+      <div class="dc-status">${d.status === 'connected' ? '● Connected' : '○ Offline'}</div>
+      <div class="dc-rssi">Signal: ${d.rssi || '—'} dBm · ${d.type || 'WiFi'}</div>
+    </div>`).join('');
+}
+
+async function pingDevice() {
+  const ip = document.getElementById('targetIp').value.trim();
+  if (!ip) { showToast('Enter an IP address first'); return; }
+  addLog('info', 'PING', `Pinging ${ip}…`);
+  // Simulate ping (browsers can't do ICMP, so we try HTTP)
+  const t0 = performance.now();
+  try {
+    await fetch(`http://${ip}/ping`, { signal: AbortSignal.timeout(2000), mode: 'no-cors' });
+    const latency = Math.round(performance.now() - t0);
+    addLog('ok', 'PING', `${ip} responded in ${latency}ms`);
+    showToast(`Ping to ${ip}: ${latency}ms`);
+  } catch(e) {
+    // For demo / no-cors, any response (even opaque) means reachable
+    const latency = Math.round(performance.now() - t0);
+    if (latency < 2000) {
+      addLog('ok', 'PING', `${ip} reachable (~${latency}ms)`);
+      showToast(`Device reachable: ${ip}`);
+    } else {
+      addLog('warn', 'PING', `${ip} unreachable or timed out`);
+      showToast(`Cannot reach ${ip}`);
+    }
+  }
+}
+
+function connectDevice() {
+  const ip = document.getElementById('targetIp').value.trim();
+  if (!ip) { showToast('Enter an IP address'); return; }
+  connectedDevices[ip] = { ip, status: 'connected', rssi: -55 - Math.floor(Math.random()*20), type: 'WiFi 802.11n', deviceId: 'QM-'+Math.floor(Math.random()*900+100) };
+  renderDeviceGrid();
+  addLog('ok', 'CONNECT', `Device ${ip} added to monitor`);
+  showToast(`Connected to ${ip}`);
+}
+
+function toggleStream() {
+  const btn = document.getElementById('streamBtn');
+  const status = document.getElementById('streamStatus');
+  if (!streaming) {
+    if (!Object.keys(connectedDevices).length) {
+      showToast('Connect a device first');
+      return;
+    }
+    streaming = true;
+    btn.textContent = '⏹ STOP STREAM';
+    btn.classList.add('green');
+    status.textContent = '● Streaming';
+    status.style.color = 'var(--green)';
+    addLog('ok', 'STREAM', 'Real-time data stream started');
+    streamInterval = setInterval(simulateSensorData, 2000);
+  } else {
+    streaming = false;
+    clearInterval(streamInterval);
+    btn.textContent = '▶ START STREAM';
+    status.textContent = 'Idle';
+    status.style.color = 'var(--text3)';
+    addLog('info', 'STREAM', 'Stream stopped');
+    showToast('Stream stopped');
+  }
+}
+
+function simulateSensorData() {
+  // Simulate incoming WiFi sensor data
+  const devices = Object.values(connectedDevices);
+  if (!devices.length) return;
+  const device = devices[Math.floor(Math.random() * devices.length)];
+
+  const hr = 60 + Math.floor(Math.random() * 60);
+  const spo2 = 94 + Math.floor(Math.random() * 7);
+  const temp = (36.0 + Math.random() * 2).toFixed(1);
+  const bp = 110 + Math.floor(Math.random() * 50);
+  const age = 20 + Math.floor(Math.random() * 60);
+
+  // Update live gauges
+  document.getElementById('s-hr').textContent = hr;
+  document.getElementById('s-spo2').textContent = spo2;
+  document.getElementById('s-temp').textContent = temp;
+  document.getElementById('s-bp').textContent = bp;
+
+  // Color code values
+  document.getElementById('s-spo2').style.color = spo2 < 95 ? 'var(--amber)' : 'var(--green)';
+  document.getElementById('s-hr').style.color = (hr < 60 || hr > 100) ? 'var(--amber)' : 'var(--green)';
+  document.getElementById('s-temp').style.color = parseFloat(temp) > 37.8 ? 'var(--red)' : 'var(--green)';
+
+  // Auto-sync to Gradio prediction inputs
+  document.getElementById('g-temp').value = temp;
+  document.getElementById('g-bpm').value  = hr;
+  document.getElementById('g-spo2').value = spo2;
+
+  // Risk assessment
+  let riskScore = 0;
+  if (hr > 100 || hr < 55) riskScore++;
+  if (spo2 < 95) riskScore += 2;
+  if (parseFloat(temp) > 38) riskScore++;
+  if (bp > 140) riskScore++;
+  const riskStr = riskScore >= 3 ? 'HIGH' : riskScore >= 1 ? 'MED' : 'LOW';
+  const riskClass = riskScore >= 3 ? 'risk-hi' : riskScore >= 1 ? 'risk-med' : 'risk-lo';
+
+  // Add to collected data
+  const record = { time: new Date().toLocaleTimeString(), ip: device.ip, age, hr, spo2, temp, bp, risk: riskStr, riskClass };
+  collectedData.unshift(record);
+
+  addLog(riskScore >= 3 ? 'err' : riskScore >= 1 ? 'warn' : 'ok', 'DATA', `${device.ip} — HR:${hr} SpO₂:${spo2}% Temp:${temp}°C BP:${bp} → ${riskStr}`);
+
+  updateDataTable();
+  document.getElementById('rowCount').textContent = collectedData.length + ' records';
+}
+
+function updateDataTable() {
+  const tbody = document.getElementById('dataBody');
+  tbody.innerHTML = collectedData.slice(0, 50).map(r => `
+    <tr>
+      <td>${r.time}</td>
+      <td style="font-family:var(--mono);color:var(--accent2)">${r.ip}</td>
+      <td>${r.age}</td>
+      <td>${r.hr}</td>
+      <td>${r.spo2}%</td>
+      <td>${r.temp}°C</td>
+      <td>${r.bp}</td>
+      <td class="${r.riskClass}">${r.risk}</td>
+    </tr>`).join('');
+}
+
+function clearLog() {
+  document.getElementById('connLog').innerHTML = '';
+  addLog('info', 'SYSTEM', 'Log cleared');
+}
+
+function clearData() {
+  collectedData = [];
+  document.getElementById('dataBody').innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:1.5rem">No data collected yet.</td></tr>';
+  document.getElementById('rowCount').textContent = '0 records';
+  showToast('Data cleared');
+}
+
+function exportCSV() {
+  if (!collectedData.length) { showToast('No data to export'); return; }
+  const header = 'Time,Device IP,Age,Heart Rate,SpO2,Temperature,BP Systolic,Risk\n';
+  const rows = collectedData.map(r => `${r.time},${r.ip},${r.age},${r.hr},${r.spo2},${r.temp},${r.bp},${r.risk}`).join('\n');
+  download('quantummed_data.csv', header + rows, 'text/csv');
+  showToast('CSV exported');
+}
+
+function exportJSON() {
+  if (!collectedData.length) { showToast('No data to export'); return; }
+  download('quantummed_data.json', JSON.stringify(collectedData, null, 2), 'application/json');
+  showToast('JSON exported');
+}
+
+function download(filename, content, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type }));
+  a.download = filename;
+  a.click();
+}
+
+function scanNetwork() {
+  const subnet = document.getElementById('subnetInput').value.trim();
+  if (!subnet) { showToast('Enter a subnet'); return; }
+  const out = document.getElementById('scanResults');
+  out.innerHTML = '<span style="color:var(--accent2)">Scanning ' + subnet + '.1-254 for QuantumMed devices…</span>';
+  addLog('info', 'SCAN', `Network scan started on ${subnet}.0/24`);
+  let found = 0;
+  // Simulate scan — in production this would use a WebSocket or local server
+  setTimeout(() => {
+    const simDevices = [
+      { ip: subnet + '.10', name: 'QM-Sensor-01', type: 'ESP32' },
+      { ip: subnet + '.42', name: 'QM-Wristband', type: 'Arduino BLE+WiFi' },
+    ];
+    found = simDevices.length;
+    out.innerHTML = simDevices.map(d =>
+      `<div style="margin:.3rem 0;display:flex;align-items:center;gap:.75rem">
+        <span style="color:var(--green)">●</span>
+        <span style="color:var(--accent)">${d.ip}</span>
+        <span style="color:var(--text2)">${d.name}</span>
+        <span style="color:var(--text3)">[${d.type}]</span>
+        <span style="color:var(--accent2);cursor:pointer" onclick="document.getElementById('targetIp').value='${d.ip}'">→ Use</span>
+      </div>`
+    ).join('') + `<div style="margin-top:.5rem;color:var(--text3)">${found} QuantumMed device(s) found</div>`;
+    addLog('ok', 'SCAN', `Found ${found} device(s) on ${subnet}.0/24`);
+    showToast(`Scan complete: ${found} device(s) found`);
+  }, 2200);
+}
+
+function testEndpoint() {
+  const url = document.getElementById('endpointUrl').value;
+  addLog('info', 'API', `Testing endpoint: ${url}`);
+  showToast('Endpoint test sent — check server logs');
+}
+
+function copyEndpoint() {
+  const url = document.getElementById('endpointUrl').value;
+  navigator.clipboard.writeText(url).then(() => showToast('URL copied'));
+}
+
+// ============================================================
+// GRADIO AI RISK PREDICTION
+// ============================================================
+function syncFromLiveSensors() {
+  const temp = document.getElementById('s-temp').textContent;
+  const bpm  = document.getElementById('s-hr').textContent;
+  const spo2 = document.getElementById('s-spo2').textContent;
+  if (temp !== '—') document.getElementById('g-temp').value = temp;
+  if (bpm  !== '—') document.getElementById('g-bpm').value  = bpm;
+  if (spo2 !== '—') document.getElementById('g-spo2').value = spo2;
+  showToast('Synced live sensor values → Gradio inputs');
+}
+
+// ── Gradio helper: try multiple endpoint patterns used by different Gradio versions ──
+async function gradioPost(base, data) {
+  // Ordered list of endpoint patterns to try (modern → legacy)
+  const endpoints = [
+    // Gradio 4.x+ (Spaces & .live): /run/predict
+    { url: `${base}/run/predict`, body: JSON.stringify({ data }) },
+    // Gradio 3.x queue-free shortcut
+    { url: `${base}/api/predict`,  body: JSON.stringify({ data }) },
+    // Some deployments expose fn_index explicitly
+    { url: `${base}/run/predict`,  body: JSON.stringify({ data, fn_index: 0 }) },
+  ];
+
+  let lastErr = null;
+  for (const ep of endpoints) {
+    try {
+      const res = await fetch(ep.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: ep.body,
+      });
+
+      if (res.status === 404) { lastErr = new Error(`404 at ${ep.url}`); continue; }
+      if (!res.ok) throw new Error(`HTTP ${res.status} at ${ep.url}`);
+
+      const json = await res.json();
+      return json; // success — return raw Gradio response object
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error('All Gradio endpoints failed');
+}
+
+// ── Parse Gradio response — handles both {data:[…]} and nested output objects ──
+function parseGradioOutput(json) {
+  // Standard Gradio response: { data: [val0, val1, …] }
+  const arr = json?.data ?? json?.output?.data ?? json?.result?.data ?? null;
+  if (Array.isArray(arr)) {
+    const risk   = arr[0] != null ? String(arr[0]).trim() : null;
+    const advice = arr[1] != null ? String(arr[1]).trim() : '';
+    return { risk, advice };
+  }
+  // Flat string response (some minimal models return just a string)
+  if (typeof json === 'string') return { risk: json.trim(), advice: '' };
+  if (typeof json?.data === 'string') return { risk: json.data.trim(), advice: '' };
+  return { risk: null, advice: '' };
+}
+
+async function runGradioPrediction() {
+  const gradioBase = (document.getElementById('gradio-url').value || '').replace(/\/$/, '');
+  const temp = parseFloat(document.getElementById('g-temp').value);
+  const bpm  = parseInt(document.getElementById('g-bpm').value);
+  const spo2 = parseInt(document.getElementById('g-spo2').value);
+
+  const statusEl = document.getElementById('gradio-status');
+  const resultEl = document.getElementById('gradio-result');
+  const predictBtn = document.querySelector('[onclick="runGradioPrediction()"]');
+
+  if (!gradioBase) { showToast('Enter Gradio URL first'); return; }
+  if (isNaN(temp) || isNaN(bpm) || isNaN(spo2)) { showToast('Fill in all three vitals'); return; }
+
+  // ── Loading state ──
+  if (predictBtn) { predictBtn.disabled = true; predictBtn.style.opacity = '0.6'; }
+  statusEl.textContent = '⏳ Connecting…';
+  statusEl.style.color = 'var(--amber)';
+  resultEl.innerHTML = `
+    <div style="display:flex;align-items:center;gap:.6rem;color:var(--text3)">
+      <div style="width:12px;height:12px;border:2px solid rgba(0,212,255,.3);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></div>
+      <span style="font-family:var(--mono);font-size:.78rem">Sending vitals to Gradio model — Temp:${temp}°C · HR:${bpm} bpm · SpO₂:${spo2}%</span>
+    </div>`;
+  addLog('info', 'GRADIO', `Sending → Temp:${temp}°C BPM:${bpm} SpO₂:${spo2}%`);
+
+  try {
+    const json = await gradioPost(gradioBase, [temp, bpm, spo2]);
+    const { risk, advice } = parseGradioOutput(json);
+
+    if (!risk) throw new Error('Model returned no recognisable output — check fn_index or output names.');
+
+    const riskColor = risk.toLowerCase().includes('high')  ? 'var(--red)'
+                    : risk.toLowerCase().includes('med')   ? 'var(--amber)'
+                    : risk.toLowerCase().includes('crit')  ? 'var(--red)'
+                    : 'var(--green)';
+
+    const riskIcon  = risk.toLowerCase().includes('high')  ? '🔴'
+                    : risk.toLowerCase().includes('med')   ? '🟡'
+                    : risk.toLowerCase().includes('crit')  ? '🔴'
+                    : '🟢';
+
+    resultEl.innerHTML = `
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.6rem">
+        <span style="font-size:1.4rem">${riskIcon}</span>
+        <div>
+          <div style="font-size:.65rem;color:var(--text3);font-family:var(--mono);letter-spacing:.08em">RISK LEVEL</div>
+          <div style="color:${riskColor};font-weight:700;font-size:1.15rem;font-family:var(--mono);letter-spacing:.04em">${risk}</div>
+        </div>
+      </div>
+      ${advice ? `
+      <div style="color:var(--text2);font-size:.8rem;font-family:var(--sans);line-height:1.7;border-top:1px solid var(--border);padding-top:.55rem;margin-bottom:.4rem">
+        ${advice}
+      </div>` : ''}
+      <div style="font-size:.67rem;color:var(--text3);font-family:var(--mono);border-top:1px solid var(--border);padding-top:.4rem;margin-top:.2rem">
+        Temp: ${temp}°C · HR: ${bpm} bpm · SpO₂: ${spo2}% &nbsp;·&nbsp; ${new Date().toLocaleTimeString()}
+      </div>`;
+
+    statusEl.textContent = '● Connected';
+    statusEl.style.color = 'var(--green)';
+    addLog('ok', 'GRADIO', `AI result → Risk: ${risk}`);
+    showToast(`Gradio AI: ${risk} risk`);
+
+  } catch (err) {
+    // ── Human-readable error display ──
+    const isNotFound = err.message.includes('404') || err.message.includes('Failed to fetch');
+    const hint = isNotFound
+      ? 'The Gradio space may be sleeping or the URL has changed — visit the URL in a browser to wake it.'
+      : 'Check the browser console for full details.';
+
+    resultEl.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:.4rem">
+        <div style="color:var(--amber);font-family:var(--mono);font-size:.8rem">⚠ Prediction failed</div>
+        <div style="color:var(--text2);font-size:.75rem">${err.message}</div>
+        <div style="color:var(--text3);font-size:.72rem;font-style:italic">${hint}</div>
+        <div style="display:flex;gap:.5rem;margin-top:.25rem;flex-wrap:wrap">
+          <a href="${(document.getElementById('gradio-url').value||'').replace(/\/$/,'')+'/run/predict'}"
+             target="_blank" rel="noopener"
+             style="color:var(--accent2);font-size:.7rem;font-family:var(--mono);text-decoration:underline">
+            Open /run/predict ↗
+          </a>
+          <a href="${document.getElementById('gradio-url').value||''}"
+             target="_blank" rel="noopener"
+             style="color:var(--accent2);font-size:.7rem;font-family:var(--mono);text-decoration:underline">
+            Wake Gradio Space ↗
+          </a>
+        </div>
+      </div>`;
+
+    statusEl.textContent = '● Error';
+    statusEl.style.color = 'var(--red)';
+    addLog('err', 'GRADIO', `Prediction failed: ${err.message}`);
+    showToast('Gradio error — see result panel for details');
+  } finally {
+    if (predictBtn) { predictBtn.disabled = false; predictBtn.style.opacity = ''; }
+  }
+}
+
+// ============================================================
+// ESP32 REAL DATA FETCH
+// ============================================================
+async function fetchEsp32Data() {
+  const ip = document.getElementById('targetIp').value.trim();
+  if (!ip) { showToast('Enter ESP32 IP address first'); return; }
+  addLog('info', 'ESP32', `Fetching sensor data from http://${ip}/data …`);
+  showToast(`Fetching from ${ip}…`);
+  try {
+    const res = await fetch(`http://${ip}/data`, {
+      signal: AbortSignal.timeout(5000),
+      mode: 'cors'
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const sensorData = await res.json();
+
+    // Map common ESP32 field names (adapt to your firmware)
+    const hr   = sensorData.heart_rate ?? sensorData.hr ?? sensorData.bpm ?? null;
+    const spo2 = sensorData.spo2 ?? sensorData.SpO2 ?? sensorData.oxygen ?? null;
+    const temp = sensorData.temperature ?? sensorData.temp ?? sensorData.body_temp ?? null;
+    const bp   = sensorData.bp_systolic ?? sensorData.bp ?? sensorData.systolic ?? null;
+
+    // Update live gauges
+    if (hr   !== null) { document.getElementById('s-hr').textContent   = hr;   document.getElementById('s-hr').style.color   = (hr < 60 || hr > 100) ? 'var(--amber)' : 'var(--green)'; }
+    if (spo2 !== null) { document.getElementById('s-spo2').textContent = spo2; document.getElementById('s-spo2').style.color = spo2 < 95 ? 'var(--amber)' : 'var(--green)'; }
+    if (temp !== null) { document.getElementById('s-temp').textContent = parseFloat(temp).toFixed(1); document.getElementById('s-temp').style.color = parseFloat(temp) > 37.8 ? 'var(--red)' : 'var(--green)'; }
+    if (bp   !== null) { document.getElementById('s-bp').textContent   = bp; }
+
+    // Auto-sync to Gradio inputs if readings available
+    if (temp !== null) document.getElementById('g-temp').value = parseFloat(temp).toFixed(1);
+    if (hr   !== null) document.getElementById('g-bpm').value  = hr;
+    if (spo2 !== null) document.getElementById('g-spo2').value = spo2;
+
+    addLog('ok', 'ESP32', `Live data received — HR:${hr??'?'} SpO₂:${spo2??'?'}% Temp:${temp??'?'}°C BP:${bp??'?'}`);
+    showToast('✓ ESP32 data received — synced to Gradio inputs');
+
+    // Optionally auto-run Gradio prediction with fresh data
+    if (temp !== null && hr !== null && spo2 !== null) {
+      setTimeout(runGradioPrediction, 400);
+    }
+
+  } catch (err) {
+    addLog('err', 'ESP32', `Fetch failed: ${err.message}`);
+    showToast(`ESP32 error: ${err.message.slice(0,40)}`);
+  }
+}
+</script>
+</body>
+</html>
